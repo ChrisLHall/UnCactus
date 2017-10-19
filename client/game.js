@@ -162,13 +162,13 @@ function create () {
 
   // This will force it to decelerate and limit its speed
   // player.body.drag.setTo(200, 200)
-  player.body.maxVelocity.setTo(0, 0)
-  player.body.collideWorldBounds = true
+  //player.body.maxVelocity.setTo(0, 0)
+  //player.body.collideWorldBounds = true
 
   // cave, blender, packer, oven, moneybag
   tiles = {}
   items = {}
-  
+
   others = []
   player.bringToTop()
 
@@ -203,7 +203,7 @@ function setKeyCallbacks () {
     selectUIElement(1);
   });
   game.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(function () {
-    socket.emit('change tile', 
+    socket.emit('change tile',
         {tileId: tileDisplayOrder[selectedItemIndex],
         x: Math.round(player.x / 16),
         y: Math.round(player.y / 16)})

@@ -2,12 +2,31 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      dev: {
+        src: ['client/*.js',],
+        dest: 'build/js/app.min.js'
+      },
       dist: {
-        src: ['client/*.js','client/**/*.js'],
-        dest: 'build/js/app.js' // TODO FIX @@@@@@@@@ not min
+        src: ['client/*.js',],
+        dest: 'build/js/app.js'
       }
     },
     copy: {
+      dev: {
+        files: [{
+          src: 'client/vendor/phaser.js',
+          dest: 'build/js/vendor/phaser.min.js'
+        },{
+          src: 'assets/**/*',
+          dest: 'build/'
+        },{
+          src: 'index.html',
+          dest: 'build/'
+        },{
+          src: 'style/*.css',
+          dest: 'build/'
+        }]
+      },
       dist: {
         files: [{
           src: 'client/vendor/phaser.min.js',
@@ -49,16 +68,6 @@ module.exports = function(grunt) {
         }
       }
     },
-    // DON'T USE THIS PLZ
-    connect: {
-      server: {
-        options: {
-          base: 'build',
-          port: 80,
-          keepalive: true
-        }
-      }
-    },
   });
 
   grunt.loadNpmTasks('grunt-contrib-concat');
@@ -67,5 +76,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-processhtml');
   grunt.loadNpmTasks('grunt-contrib-connect');
 
-  grunt.registerTask('default', ['concat', 'uglify', 'copy', 'processhtml']);
+  grunt.registerTask('default', ['concat:dist', 'uglify', 'copy:dist', 'processhtml']);
+  grunt.registerTask('dev', ['concat:dev', 'copy:dev', 'processhtml'])
 }
