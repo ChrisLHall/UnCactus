@@ -160,6 +160,7 @@ function create () {
   var startY = 0
 
   player = playerGroup.create(startX, startY, 'playerbee')
+  player.body.drag = new Phaser.Point(600, 600)
   player.animations.add("fly", [0, 1], 10, true);
   player.animations.play("fly")
   //player = game.add.sprite(startX, startY, 'selected')
