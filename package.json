@@ -1,18 +1,22 @@
 {
-  "name": "phaser-multiplayer-game",
-  "version": "1.0.0",
+  "name": "uncactus-game",
+  "version": "0.0.1",
   "description": "Phaser example gone multiplayer!",
-  "main": "lib/game.js",
+  "main": "lib/gameServer.js",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/ChrisLHall/UnCactus.git"
+  },
   "scripts": {
     "start": "node .",
     "dev": "nodemon .",
     "lint": "standard --verbose | snazzy"
   },
-  "author": "Francisco Dias",
+  "author": "Chris L. Hall",
   "license": "MIT",
   "dependencies": {
-    "ecstatic": "^1.0.1",
-    "socket.io": "^1.3.7"
+    "express": "^4.15.2",
+    "socket.io": "^2.0.3"
   },
   "devDependencies": {
     "nodemon": "^0.7.10",
