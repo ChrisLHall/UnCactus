@@ -2,13 +2,9 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
-      dev: {
-        src: ['client/*.js',],
-        dest: 'build/js/app.min.js'
-      },
       dist: {
         src: ['client/*.js',],
-        dest: 'build/js/app.js'
+        dest: 'build/js/app.min.js'
       }
     },
     copy: {
@@ -17,10 +13,16 @@ module.exports = function(grunt) {
           src: 'client/vendor/phaser.js',
           dest: 'build/js/vendor/phaser.min.js'
         },{
+          src: 'client/vendor/KiiSDK.js',
+          dest: 'build/js/vendor/KiiSDK.min.js'
+        },{
           src: 'assets/**/*',
           dest: 'build/'
         },{
           src: 'index.html',
+          dest: 'build/'
+        },{
+          src: 'favicon.ico',
           dest: 'build/'
         },{
           src: 'style/*.css',
@@ -32,10 +34,16 @@ module.exports = function(grunt) {
           src: 'client/vendor/phaser.min.js',
           dest: 'build/js/vendor/phaser.min.js'
         },{
+          src: 'client/vendor/KiiSDK.min.js',
+          dest: 'build/js/vendor/KiiSDK.min.js'
+        },{
           src: 'assets/**/*',
           dest: 'build/'
         },{
           src: 'index.html',
+          dest: 'build/'
+        },{
+          src: 'favicon.ico',
           dest: 'build/'
         },{
           src: 'style/*.css',
@@ -64,7 +72,7 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'build/js/app.min.js': ['build/js/app.js']
+          'build/js/app.min.js': ['build/js/app.min.js']
         }
       }
     },
@@ -76,6 +84,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-processhtml');
   grunt.loadNpmTasks('grunt-contrib-connect');
 
-  grunt.registerTask('default', ['concat:dist', 'uglify', 'copy:dist', 'processhtml']);
-  grunt.registerTask('dev', ['concat:dev', 'copy:dev', 'processhtml'])
+  grunt.registerTask('default', ['concat', 'uglify', 'copy:dist', 'processhtml']);
+  grunt.registerTask('dev', ['concat', 'copy:dev', 'processhtml'])
 }

@@ -105,6 +105,8 @@ function preload () {
 
   game.load.image('earth', 'assets/images/light_sand.png')
   game.load.image('ui', 'assets/images/UI.png')
+
+  game.load.spritesheet('playerbee', 'assets/images/bigbee.png', 64, 64)
 }
 
 var socket // Socket connection
@@ -138,7 +140,7 @@ var uiGroup
 
 function create () {
   socket = io.connect()
-
+  game.physics.startSystem(Phaser.Physics.ARCADE)
   // Resize our game world to be a 2000 x 2000 square
   game.world.setBounds(-512, -512, 1024, 1024)
 
@@ -149,6 +151,7 @@ function create () {
   tileGroup = game.add.group();
   itemGroup = game.add.group();
   playerGroup = game.add.group();
+  playerGroup.enableBody = true;
   uiGroup = game.add.group();
   uiGroup.fixedToCamera = true
 
@@ -156,7 +159,9 @@ function create () {
   var startX = 0
   var startY = 0
 
-  player = playerGroup.create(startX, startY, 'selectedme')
+  player = playerGroup.create(startX, startY, 'playerbee')
+  player.animations.add("fly", [0, 1], 10, true);
+  player.animations.play("fly")
   //player = game.add.sprite(startX, startY, 'selected')
   // player.anchor.setTo(0.5, 0.5)
 
@@ -182,11 +187,12 @@ function create () {
   uiText = game.add.text(UI_TEXT_POS.x, UI_TEXT_POS.y, "...", {font: 'Courier 10pt'})
   uiGroup.add(uiText)
   selectUIElement(0)
-  console.log("hey")
 
   setKeyCallbacks()
   // Start listening for events
   setEventHandlers()
+
+  Kii.initializeWithSite("l1rxzy4xclvo", "f662ebb1125548bc84626f5264eb11b4", KiiSite.US)
 }
 
 function setKeyCallbacks () {
@@ -378,6 +384,23 @@ var countdown = MAXCOUNT
 var MAXKEYCOUNT = 8
 var keyCountdown = MAXKEYCOUNT
 function update () {
+  //  only move when you click
+  if (game.input.mousePointer.isDown)
+  {
+      //  400 is the speed it will move towards the mouse
+      game.physics.arcade.moveToPointer(player, 400);
+
+      //  if it's overlapping the mouse, don't move any more
+      if (Phaser.Rectangle.contains(player.body, game.input.x, game.input.y))
+      {
+          player.body.velocity.setTo(0, 0);
+      }
+  }
+  else
+  {
+      //player.body.velocity.setTo(0, 0);
+  }
+
   keyCountdown--
   if (keyCountdown === 0) {
     if (cursors.left.isDown) {

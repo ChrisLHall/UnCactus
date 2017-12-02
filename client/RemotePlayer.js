@@ -6,12 +6,14 @@ var RemotePlayer = function (index, game, group, player, startX, startY) {
 
   this.game = game
   this.health = 3
-  this.player = player
 
-  this.player = group.create(x, y, 'selected')
+  this.player = group.create(x, y, 'playerbee')
+  this.player.animations.add("fly", [0, 1], 10, true);
+  this.player.animations.play("fly")
   //this.player = game.add.sprite(x, y, 'selected')
 
   this.player.name = index.toString()
+  console.log(this.player) // TODO REMOVE
   this.player.body.immovable = true
   this.player.body.collideWorldBounds = true
 
