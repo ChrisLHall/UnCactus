@@ -115,7 +115,12 @@ var land
 
 var player
 
-var others
+var glob = {
+  intermittents: [],
+  otherPlayers: [],
+}
+window.glob = glob
+
 var tiles
 var items
 var money = 0
@@ -164,7 +169,10 @@ function create () {
   player.animations.add("fly", [0, 1], 10, true);
   player.animations.play("fly")
   //player = game.add.sprite(startX, startY, 'selected')
-  // player.anchor.setTo(0.5, 0.5)
+  player.anchor.setTo(0.5, 0.5)
+  glob.intermittents.push(new IntermittentUpdater(15, function () {
+    socket.emit('move player', { x: player.x, y: player.y, vx: player.body.velocity.x, vy: player.body.velocity.y, angle: player.angle })
+  }))
 
   // This will force it to decelerate and limit its speed
   // player.body.drag.setTo(200, 200)
@@ -175,11 +183,10 @@ function create () {
   tiles = {}
   items = {}
 
-  others = []
   player.bringToTop()
 
   game.camera.follow(player)
-  game.camera.deadzone = new Phaser.Rectangle(150, 150, 500, 300)
+  game.camera.deadzone = new Phaser.Rectangle(200, 150, 500, 200)
   game.camera.focusOnXY(0, 0)
 
   uiGroup.create(UI_BACK_POS.x, UI_BACK_POS.y, 'ui')
@@ -260,8 +267,8 @@ function onNewPlayer (data) {
   console.log('New player connected:', data.id)
 
   // Add new player to the remote players array
-  var remote = new RemotePlayer(data.id, game, playerGroup, player, data.x, data.y)
-  others.push(remote)
+  var remote = new RemotePlayer(data.id, game, playerGroup, data.x, data.y)
+  glob.otherPlayers.push(remote)
 }
 
 // Move player
@@ -277,6 +284,8 @@ function onMovePlayer (data) {
   // Update player position
   movePlayer.player.x = data.x
   movePlayer.player.y = data.y
+  movePlayer.player.body.velocity = new Phaser.Point(data.vx, data.vy)
+  movePlayer.player.angle = data.angle
 }
 
 // Remove player
@@ -293,7 +302,7 @@ function onRemovePlayer (data) {
   removePlayer.player.kill()
 
   // Remove player from array
-  others.splice(others.indexOf(removePlayer), 1)
+  glob.otherPlayers.splice(glob.otherPlayers.indexOf(removePlayer), 1)
 }
 
 function onMapUpdate (data) {
@@ -355,6 +364,51 @@ function selectUIElement (indexDelta) {
   updateUI()
 }
 
+
+function getTileOrItem (tilesOrItems, x, y) {
+  return tilesOrItems[x.toString() + ',' + y.toString]
+}
+
+function setTileOrItem (tilesOrItems, x, y, id) {
+  tilesOrItems[x.toString() + ',' + y.toString] = id
+}
+
+var MAXCOUNT = 20
+var countdown = MAXCOUNT
+var MAXKEYCOUNT = 8
+var keyCountdown = MAXKEYCOUNT
+var ZERO_POINT = new Phaser.Point(0, 0)
+function update () {
+  //  only move when you click
+  if (game.input.mousePointer.isDown) {
+      //  400 is the speed it will move towards the mouse
+      game.physics.arcade.moveToPointer(player, 400);
+      player.angle = player.body.angle * Phaser.Math.RAD_TO_DEG
+      console.log(player.angle)
+  } else {
+      //player.body.velocity.setTo(0, 0);
+  }
+
+  for (var i = 0; i < glob.intermittents.length; i++) {
+    glob.intermittents[i].update()
+  }
+  for (var i = 0; i < glob.otherPlayers.length; i++) {
+    glob.otherPlayers[i].update()
+  }
+  land.tilePosition.x = -game.camera.x
+  land.tilePosition.y = -game.camera.y
+  uiGroup.x = game.camera.x - UI_BACK_POS.x
+  uiGroup.y = game.camera.y - UI_BACK_POS.y
+
+  updateUI()
+
+  countdown--
+  if (countdown === 0) {
+    countdown = MAXCOUNT
+    socket.emit('query map', {})
+  }
+}
+
 function updateUI () {
   var tileId = tileDisplayOrder[selectedItemIndex]
 
@@ -367,86 +421,15 @@ function updateUI () {
       + '\nMoney: ' + money.toString())
 }
 
-function getTileOrItem (tilesOrItems, x, y) {
-  return tilesOrItems[x.toString() + ',' + y.toString]
-}
-
-function setTileOrItem (tilesOrItems, x, y, id) {
-  tilesOrItems[x.toString() + ',' + y.toString] = id
-}
-
-function movePlayer (dx, dy) {
-  player.x += dx * GRID_SIZE
-  player.y += dy * GRID_SIZE
-}
-
-var MAXCOUNT = 20
-var countdown = MAXCOUNT
-var MAXKEYCOUNT = 8
-var keyCountdown = MAXKEYCOUNT
-function update () {
-  //  only move when you click
-  if (game.input.mousePointer.isDown)
-  {
-      //  400 is the speed it will move towards the mouse
-      game.physics.arcade.moveToPointer(player, 400);
-
-      //  if it's overlapping the mouse, don't move any more
-      if (Phaser.Rectangle.contains(player.body, game.input.x, game.input.y))
-      {
-          player.body.velocity.setTo(0, 0);
-      }
-  }
-  else
-  {
-      //player.body.velocity.setTo(0, 0);
-  }
-
-  keyCountdown--
-  if (keyCountdown === 0) {
-    if (cursors.left.isDown) {
-      movePlayer(-1, 0)
-    }
-    if (cursors.right.isDown) {
-      movePlayer(1, 0)
-    }
-    if (cursors.up.isDown) {
-      movePlayer(0, -1)
-    }
-    if (cursors.down.isDown) {
-      movePlayer(0, 1)
-    }
-    keyCountdown = MAXKEYCOUNT
-  }
-
-  for (var i = 0; i < others.length; i++) {
-    others[i].update()
-  }
-  land.tilePosition.x = -game.camera.x
-  land.tilePosition.y = -game.camera.y
-  uiGroup.x = game.camera.x - UI_BACK_POS.x
-  uiGroup.y = game.camera.y - UI_BACK_POS.y
-
-  socket.emit('move player', { x: player.x, y: player.y })
-
-  updateUI()
-
-  countdown--
-  if (countdown === 0) {
-    countdown = MAXCOUNT
-    socket.emit('query map', {})
-  }
-}
-
 function render () {
 
 }
 
 // Find player by ID
 function playerById (id) {
-  for (var i = 0; i < others.length; i++) {
-    if (others[i].player.name === id) {
-      return others[i]
+  for (var i = 0; i < glob.otherPlayers.length; i++) {
+    if (glob.otherPlayers[i].player.name === id) {
+      return glob.otherPlayers[i]
     }
   }
 

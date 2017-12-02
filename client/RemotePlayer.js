@@ -1,6 +1,6 @@
 /* global game */
 
-var RemotePlayer = function (index, game, group, player, startX, startY) {
+var RemotePlayer = function (index, game, group, startX, startY) {
   var x = startX
   var y = startY
 
