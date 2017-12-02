@@ -380,7 +380,7 @@ var keyCountdown = MAXKEYCOUNT
 var ZERO_POINT = new Phaser.Point(0, 0)
 function update () {
   //  only move when you click
-  if (game.input.mousePointer.isDown) {
+  if (game.input.activePointer.isDown) {
       //  400 is the speed it will move towards the mouse
       game.physics.arcade.moveToPointer(player, 400);
       player.angle = player.body.angle * Phaser.Math.RAD_TO_DEG
@@ -422,7 +422,7 @@ function updateUI () {
 }
 
 function render () {
-
+  
 }
 
 // Find player by ID
