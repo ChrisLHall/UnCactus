@@ -2,21 +2,20 @@
 <html lang='en'>
   <head>
     <meta charset='UTF-8' />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/> <!--320-->
     <title>Phaser multiplayer game</title>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <link type='text/css' rel='stylesheet' href='style/reset.css' />
+    <link type='text/css' rel='stylesheet' href='style/page.css' />
     <link type='text/css' rel='stylesheet' href='style/game.css' />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src='js/vendor/phaser.min.js'></script>
     <script src='js/vendor/KiiSDK.min.js'></script>
-    <!-- build:js js/app.min.js -->
-    <script src='js/RemotePlayer.js'></script>
-    <script src='js/game.js'></script>
-    <!-- /build -->
+    <script src='js/app.min.js'></script>
   </head>
-  <body style="background-color:#333333; color:#dddddd;">
-    <div id="gameContainer"></div>
+  <body>
+  <div style="height:100%;">
+    <div id="gameContainer" style="display:inline-block; height:85%; background-color:#444444"></div>
     <div>
       TEMPORARY AS HECK CHAT WHILE I DEV
       <form id="chatForm">
@@ -31,5 +30,6 @@
         e.preventDefault()
       })
     </script>
+  </div>
   </body>
 </html>

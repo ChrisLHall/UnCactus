@@ -11,18 +11,30 @@ var RemotePlayer = function (playerID, game, group, startX, startY) {
   this.player = group.create(x, y, 'playerbee')
   this.player.animations.add("fly", [0, 1], 10, true);
   this.player.animations.play("fly")
-  //this.player = game.add.sprite(x, y, 'selected')
+  this.player.anchor.setTo(0.5, 0.5)
 
-  console.log(this.player) // TODO REMOVE
   this.player.body.immovable = true
   this.player.body.collideWorldBounds = true
 
-  this.lastPosition = { x: x, y: y }
+  this.targetPos = new Phaser.Point(x, y)
+  this.lerpSpeed = 0
 }
 
 RemotePlayer.prototype.update = function () {
-  this.lastPosition.x = this.player.x
-  this.lastPosition.y = this.player.y
+  var delta = Phaser.Point.subtract(this.targetPos, this.player.position)
+  if (delta.getMagnitude() > this.lerpSpeed) {
+    delta.normalize()
+    delta.multiply(this.lerpSpeed, this.lerpSpeed)
+  }
+  this.player.x += delta.x
+  this.player.y += delta.y
+}
+
+RemotePlayer.prototype.setTargetPos = function(x, y) {
+  this.targetPos.x = x
+  this.targetPos.y = y
+
+  this.lerpSpeed = Phaser.Point.subtract(this.player.position, this.targetPos).getMagnitude() / 30
 }
 
 window.RemotePlayer = RemotePlayer

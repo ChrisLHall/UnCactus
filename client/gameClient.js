@@ -104,7 +104,10 @@ function preload () {
   game.load.image('selectedme', 'assets/images/selectedme.png')
   game.load.image('delete', 'assets/images/delete.png')
 
-  game.load.image('earth', 'assets/images/light_sand.png')
+  game.load.image('planet', 'assets/images/planet.png')
+
+  game.load.image('spaceBG', 'assets/images/starfield.png')
+  game.load.image('spaceFG', 'assets/images/dustfield.png')
   game.load.image('ui', 'assets/images/UI.png')
 
   game.load.spritesheet('playerbee', 'assets/images/bigbee.png', 64, 64)
@@ -112,7 +115,8 @@ function preload () {
 
 var socket // Socket connection
 
-var land
+var spaceBG
+var spaceFG
 
 var player
 // The base of our player
@@ -122,6 +126,7 @@ var startY = 0
 var glob = {
   intermittents: [],
   otherPlayers: [],
+  planets: [],
 }
 window.glob = glob
 
@@ -144,23 +149,32 @@ var GRID_SIZE = 16
 
 var tileGroup
 var itemGroup
+var planetGroup
 var playerGroup
 var uiGroup
 
 function create () {
+  game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+  // TODO remove for release????
+  game.stage.disableVisibilityChange = true;
   socket = io.connect()
   // Start listening for events
   setEventHandlers()
 
   game.physics.startSystem(Phaser.Physics.ARCADE)
-  game.world.setBounds(-5120, -5120, 10240, 10240)
+  game.world.setBounds(-2000, -2000, 4000, 4000)
 
   // Our tiled scrolling background
-  land = game.add.tileSprite(0, 0, 513, 912, 'earth')
-  land.fixedToCamera = true
+  spaceBG = game.add.tileSprite(0, 0, 513, 912, 'spaceBG')
+  spaceBG.fixedToCamera = true
+  spaceFG = game.add.tileSprite(0, 0, 513, 912, 'spaceFG')
+  spaceFG.fixedToCamera = true
 
   tileGroup = game.add.group();
   itemGroup = game.add.group();
+
+  planetGroup = game.add.group();
+
   playerGroup = game.add.group();
   playerGroup.enableBody = true;
   uiGroup = game.add.group();
@@ -181,6 +195,12 @@ function create () {
   selectUIElement(0)
 
   Kii.initializeWithSite("l1rxzy4xclvo", "f662ebb1125548bc84626f5264eb11b4", KiiSite.US)
+
+  // TODO MAKE Kii create these
+  for (var i = 0; i < 8; i++) {
+    var planet = new Planet("doop", game, planetGroup, -1500 + Math.random() * 3000, -1500 + Math.random() * 3000, 1 + Math.random() * .1)
+    glob.planets.push(planet)
+  }
 }
 
 function setKeyCallbacks () {
@@ -242,9 +262,9 @@ function onConfirmID (data) {
   player.animations.play("fly")
   //player = game.add.sprite(startX, startY, 'selected')
   player.anchor.setTo(0.5, 0.5)
-  glob.intermittents.push(new IntermittentUpdater(15, function () {
+  glob.intermittents.push(new IntermittentUpdater(function () {
     socket.emit('move player', { x: player.x, y: player.y, vx: player.body.velocity.x, vy: player.body.velocity.y, angle: player.angle })
-  }))
+  }, 30))
   player.bringToTop()
   setKeyCallbacks()
 
@@ -272,9 +292,10 @@ function onMovePlayer (data) {
   }
 
   // Update player position
-  movePlayer.player.x = data.x
-  movePlayer.player.y = data.y
-  movePlayer.player.body.velocity = new Phaser.Point(data.vx, data.vy)
+  //movePlayer.player.x = data.x
+  //movePlayer.player.y = data.y
+  //movePlayer.player.body.velocity = new Phaser.Point(data.vx, data.vy)
+  movePlayer.setTargetPos(data.x, data.y)
   movePlayer.player.angle = data.angle
 }
 
@@ -370,12 +391,14 @@ var keyCountdown = MAXKEYCOUNT
 var ZERO_POINT = new Phaser.Point(0, 0)
 function update () {
   //  only move when you click
-  if (game.input.activePointer.isDown) {
-      //  400 is the speed it will move towards the mouse
-      game.physics.arcade.moveToPointer(player, 400);
-      player.angle = player.body.angle * Phaser.Math.RAD_TO_DEG
+  if (game.input.activePointer.isDown
+      && Phaser.Point.subtract(
+      new Phaser.Point(game.input.activePointer.worldX, game.input.activePointer.worldY), player.position)
+      .getMagnitude() > 70) {
+    game.physics.arcade.moveToPointer(player, 500);
+    player.angle = player.body.angle * Phaser.Math.RAD_TO_DEG
   } else {
-      //player.body.velocity.setTo(0, 0);
+    //player.body.velocity.setTo(0, 0);
   }
 
   for (var i = 0; i < glob.intermittents.length; i++) {
@@ -384,10 +407,15 @@ function update () {
   for (var i = 0; i < glob.otherPlayers.length; i++) {
     glob.otherPlayers[i].update()
   }
-  land.tilePosition.x = -game.camera.x / 3
-  land.tilePosition.y = -game.camera.y / 3
-  uiGroup.x = game.camera.x - UI_BACK_POS.x
-  uiGroup.y = game.camera.y - UI_BACK_POS.y
+  for (var i = 0; i < glob.planets.length; i++) {
+    glob.planets[i].update()
+  }
+  spaceBG.tilePosition.x = -game.camera.x / 3
+  spaceBG.tilePosition.y = -game.camera.y / 3
+  spaceFG.tilePosition.x = -game.camera.x
+  spaceFG.tilePosition.y = -game.camera.y
+  //uiGroup.x = game.camera.x - UI_BACK_POS.x
+  //uiGroup.y = game.camera.y - UI_BACK_POS.y
 
   updateUI()
 

@@ -1,0 +1,12 @@
+html {
+  height: 100%;
+}
+body {
+  height: 100%;
+  background-color:#333333;
+  color:#dddddd;
+  text-align: center;
+}
+ul {
+	list-style: none;
+}
