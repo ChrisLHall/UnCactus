@@ -197,7 +197,7 @@ function create () {
 
   // TODO MAKE Kii create these
   for (var i = 0; i < 8; i++) {
-    var planet = new Planet("doop", game, planetGroup, -1500 + Math.random() * 3000, -1500 + Math.random() * 3000, .4 + Math.random() * .1)
+    var planet = new Planet("doop", planetGroup, -1500 + Math.random() * 3000, -1500 + Math.random() * 3000, .4 + Math.random() * .1)
     glob.planets.push(planet)
   }
 }
@@ -224,6 +224,8 @@ var setEventHandlers = function () {
   socket.on('update map', onMapUpdate)
 
   socket.on('update tile cost', onUpdateTileCost)
+  socket.on('update player info', onUpdatePlayerInfo)
+  socket.on('update planet info', onUpdatePlanetInfo)
 
   socket.on('chat message', onReceiveChat)
   // server side only
@@ -248,10 +250,34 @@ function onConfirmID (data) {
   console.log("confirmed my ID: " + data.playerID)
   window.localStorage.setItem("preferredID", data.playerID)
 
-  player = new LocalPlayer(data.playerID, playerGroup, startX, startY)
+  tryKiiLogin(data.playerID, function () {
+    player = new LocalPlayer(data.playerID, playerGroup, startX, startY)
 
-  game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT, 0.3, 0.3)
-  game.camera.focusOnXY(startX, startY)
+    game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT, 0.3, 0.3)
+    game.camera.focusOnXY(startX, startY)
+
+    queryPlayerInfo(player, player.playerID)
+  })
+}
+
+tryKiiLogin = function (playerID, successCallback) {
+  var username = playerID;
+  var password = "password9001";
+  KiiUser.authenticate(username, password).then(function (user) {
+    console.log("Kii User authenticated: " + JSON.stringify(user));
+    successCallback()
+  }).catch(function (error) {
+    var errorString = error.message;
+    console.log("Unable to authenticate user: " + errorString + "...attempting signup");
+    var user = KiiUser.userWithUsername(username, password);
+    user.register().then(function (user) {
+      console.log("User registered: " + JSON.stringify(user));
+      successCallback()
+    }).catch(function(error) {
+      var errorString = "" + error.code + error.message;
+      console.log("Unable to register user: " + errorString + "... reload I guess?");
+    });
+  });
 }
 
 // New player
@@ -261,11 +287,12 @@ function onNewPlayer (data) {
   // Add new player to the remote players array
   var remote = new RemotePlayer(data.playerID, playerGroup, data.x, data.y)
   glob.otherPlayers.push(remote)
+  queryPlayerInfo(remote, data.playerID)
 }
 
 // Move player
 function onMovePlayer (data) {
-  var movePlayer = playerByPlayerID(data.playerID)
+  var movePlayer = playerByID(data.playerID)
 
   // Player not found
   if (null == movePlayer) {
@@ -279,7 +306,7 @@ function onMovePlayer (data) {
 
 // Remove player
 function onRemovePlayer (data) {
-  var removePlayer = playerByPlayerID(data.playerID)
+  var removePlayer = playerByID(data.playerID)
 
   // Player not found
   if (!removePlayer) {
@@ -337,6 +364,56 @@ function onMapUpdate (data) {
 function onUpdateTileCost (data) {
   itemCostStr = data.cost.toString()
   updateUI()
+}
+
+function onUpdatePlayerInfo (data) {
+  if (null != player && data.playerID === player.playerID) {
+    queryPlayerInfo(player, data.playerID)
+  } else {
+    var otherPlayer = playerByID(data.playerID)
+    if (null != otherPlayer) {
+      queryPlayerInfo(otherPlayer, data.playerID)
+    }
+  }
+}
+
+function onUpdatePlanetInfo (data) {
+  var planet = planetByID(data.planetID)
+  if (null != otherPlanet) {
+    queryPlanetInfo(otherPlanet, data.planetID)
+  }
+}
+
+function queryPlayerInfo (playerObj, playerID) {
+  if (null == playerObj) {
+    return
+  }
+  var queryObject = KiiQuery.queryWithClause(KiiClause.equals("playerid", playerID));
+  queryObject.sortByDesc("_created");
+
+  var bucket = Kii.bucketWithName("PlayerInfo");
+  bucket.executeQuery(queryObject).then(function (params) {
+    var queryPerformed = params[0];
+    var result = params[1];
+    var nextQuery = params[2]; // if there are more results
+    if (result.length > 0) {
+      if (result.length > 1) {
+        console.log("Multiple PlayerInfos for " + playerID)
+      }
+      console.log(playerID + ": PlayerInfo query successful")
+      console.log(result[0])
+      //playerObj.setPlayerInfo(result[0])
+    } else {
+      console.log(playerID + ": PlayerInfo query failed, returned no objects")
+    }
+  }).catch(function (error) {
+    var errorString = "" + error.code + ":" + error.message;
+    console.log(playerID + ": PlayerInfo query failed, unable to execute query: " + errorString);
+  });
+}
+
+function queryPlanetInfo(planetObj, planetID) {
+  // TODO
 }
 
 function selectUIElement (indexDelta) {
@@ -416,14 +493,21 @@ function render () {
 
 }
 
-// Find player by ID
-function playerByPlayerID (playerID) {
+function playerByID (playerID) {
   for (var i = 0; i < glob.otherPlayers.length; i++) {
     if (glob.otherPlayers[i].playerID === playerID) {
       return glob.otherPlayers[i]
     }
   }
+  return null
+}
 
+function planetById (planetID) {
+  for (var i = 0; i < glob.planets.length; i++) {
+    if (glob.planet[i].planetID === planetID) {
+      return glob.planets[i]
+    }
+  }
   return null
 }
 

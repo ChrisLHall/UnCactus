@@ -5,6 +5,7 @@ var RemotePlayer = function (playerID, group, startX, startY) {
   var y = startY
 
   this.playerID = playerID
+  this.playerInfo = null
 
   this.gameObj = group.create(x, y, 'playerbee')
   this.gameObj.animations.add("fly", [0, 1], 10, true);
@@ -16,6 +17,18 @@ var RemotePlayer = function (playerID, group, startX, startY) {
 
   this.targetPos = new Phaser.Point(x, y)
   this.lerpSpeed = 0
+}
+
+RemotePlayer.colors = [0xffffff, 0xddffdd, 0xffddff]
+RemotePlayer.prototype.setColorIndex = function (ind) {
+  this.gameObj.tint = RemotePlayer.colors[ind];
+}
+
+RemotePlayer.prototype.setPlayerInfo = function (info) {
+  this.playerInfo = info
+  if (null != info) {
+    this.setColorIndex(info.color)
+  }
 }
 
 RemotePlayer.prototype.exists = function () {

@@ -3,7 +3,7 @@ var LocalPlayer = function (playerID, group, startX, startY) {
   var y = startY
 
   this.playerID = playerID
-  this.kiiLoggedIn = false
+  this.playerInfo = null
 
   this.gameObj = group.create(startX, startY, 'playerbee')
   this.gameObj.body.drag = new Phaser.Point(600, 600)
@@ -16,32 +16,22 @@ var LocalPlayer = function (playerID, group, startX, startY) {
   }, 30))
 
   this.gameObj.body.collideWorldBounds = true
+}
 
-  this.tryKiiLogin()
+LocalPlayer.colors = [0xffffff, 0xddffdd, 0xffddff]
+LocalPlayer.prototype.setColorIndex = function (ind) {
+  this.gameObj.tint = LocalPlayer.colors[ind];
+}
+
+LocalPlayer.prototype.setPlayerInfo = function (info) {
+  this.playerInfo = info
+  if (null != info) {
+    this.setColorIndex(info.color)
+  }
 }
 
 LocalPlayer.prototype.exists = function () {
   return this.gameObj.exists
-}
-
-LocalPlayer.prototype.tryKiiLogin = function () {
-  var username = this.playerID;
-  var password = "password9001";
-  KiiUser.authenticate(username, password).then(function (user) {
-    console.log("Kii User authenticated: " + JSON.stringify(user));
-    this.kiiLoggedIn = true
-  }).catch(function (error) {
-    var errorString = error.message;
-    console.log("Unable to authenticate user: " + errorString + "...attempting signup");
-    var user = KiiUser.userWithUsername(username, password);
-    user.register().then(function (user) {
-      console.log("User registered: " + JSON.stringify(user));
-      this.kiiLoggedIn = true
-    }).catch(function(error) {
-      var errorString = error.message;
-      console.log("Unable to register user: " + errorString + "... reload I guess?");
-    });
-  });
 }
 
 LocalPlayer.prototype.update = function () {
