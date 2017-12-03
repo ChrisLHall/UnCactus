@@ -6,6 +6,7 @@
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link type='text/css' rel='stylesheet' href='style/reset.css' />
     <link type='text/css' rel='stylesheet' href='style/game.css' />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src='js/vendor/phaser.min.js'></script>
     <script src='js/vendor/KiiSDK.min.js'></script>
@@ -15,5 +16,20 @@
     <!-- /build -->
   </head>
   <body>
+    <div id="gameContainer"></div>
+    <div>
+      TEMPORARY AS HECK CHAT WHILE I DEV
+      <form id="chatForm">
+        <input id="m" autocomplete="off" /><button>Send</button>
+      </form>
+      <ul id="messages"></ul>
+    </div>
+    <script type="text/javascript">
+      $("form").submit(function(e) {
+        socket.emit('chat message', $('#m').val())
+        $('#m').val("")
+        e.preventDefault()
+      })
+    </script>
   </body>
 </html>

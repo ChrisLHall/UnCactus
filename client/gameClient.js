@@ -61,7 +61,8 @@ var itemSprites = {
   16: 'aliensubject',
 }
 
-var game = new Phaser.Game(896, 504, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render })
+var game = new Phaser.Game(896, 504, Phaser.AUTO, 'gameContainer',
+    { preload: preload, create: create, update: update, render: render })
 
 function preload () {
   game.load.image('downarrow', 'assets/images/downarrow.png')
@@ -245,6 +246,7 @@ var setEventHandlers = function () {
 
   socket.on('update tile cost', onUpdateTileCost)
 
+  socket.on('chat message', onReceiveChat)
   // server side only
   //socket.on('change tile', onChangeTile)
 }
@@ -384,7 +386,6 @@ function update () {
       //  400 is the speed it will move towards the mouse
       game.physics.arcade.moveToPointer(player, 400);
       player.angle = player.body.angle * Phaser.Math.RAD_TO_DEG
-      console.log(player.angle)
   } else {
       //player.body.velocity.setTo(0, 0);
   }
@@ -422,7 +423,7 @@ function updateUI () {
 }
 
 function render () {
-  
+
 }
 
 // Find player by ID
@@ -434,4 +435,9 @@ function playerById (id) {
   }
 
   return false
+}
+
+// TEMP CHAT SYSTEM
+function onReceiveChat(msg) {
+    $('#messages').prepend($('<li>').text(msg));
 }
