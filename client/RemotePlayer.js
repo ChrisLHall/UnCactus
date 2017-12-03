@@ -16,12 +16,11 @@ var RemotePlayer = function (playerID, group, startX, startY) {
   this.gameObj.body.collideWorldBounds = true
 
   this.targetPos = new Phaser.Point(x, y)
-  this.lerpSpeed = 0
+  this.lerpSpeed = 6
 }
 
-RemotePlayer.colors = [0xffffff, 0xddffdd, 0xffddff]
 RemotePlayer.prototype.setColorIndex = function (ind) {
-  this.gameObj.tint = RemotePlayer.colors[ind];
+  this.gameObj.tint = LocalPlayer.colors[ind];
 }
 
 RemotePlayer.prototype.setPlayerInfo = function (info) {
@@ -49,7 +48,7 @@ RemotePlayer.prototype.setTargetPos = function(x, y) {
   this.targetPos.x = x
   this.targetPos.y = y
 
-  this.lerpSpeed = Phaser.Point.subtract(this.gameObj.position, this.targetPos).getMagnitude() / 30
+  //this.lerpSpeed = Phaser.Point.subtract(this.gameObj.position, this.targetPos).getMagnitude() / 30
 }
 
 window.RemotePlayer = RemotePlayer

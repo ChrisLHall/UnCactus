@@ -65,45 +65,6 @@ var game = new Phaser.Game(513, 912, Phaser.AUTO, 'gameContainer',
     { preload: preload, create: create, update: update, render: render })
 
 function preload () {
-  game.load.image('downarrow', 'assets/images/downarrow.png')
-  game.load.image('uparrow', 'assets/images/uparrow.png')
-  game.load.image('leftarrow', 'assets/images/leftarrow.png')
-  game.load.image('rightarrow', 'assets/images/rightarrow.png')
-  game.load.image('blender', 'assets/images/blender.png')
-  game.load.image('moneybag', 'assets/images/moneybag.png')
-  game.load.image('oven', 'assets/images/oven.png')
-  game.load.image('packer', 'assets/images/packer.png')
-  game.load.image('fence', 'assets/images/fence.png')
-
-  game.load.image('cave', 'assets/images/cave.png')
-  game.load.image('alienufo', 'assets/images/alienufo.png')
-  game.load.image('chickencoop', 'assets/images/chickencoop.png')
-  game.load.image('pigbarn', 'assets/images/pigbarn.png')
-
-  game.load.image('blood', 'assets/images/blood.png')
-  game.load.image('rawhotdog', 'assets/images/rawhotdog.png')
-  game.load.image('hotdog', 'assets/images/hotdog.png')
-  game.load.image('pigsubject', 'assets/images/pigsubject.png')
-
-  game.load.image('alienblood', 'assets/images/alienblood.png')
-  game.load.image('rawalienhotdog', 'assets/images/rawalienhotdog.png')
-  game.load.image('alienhotdog', 'assets/images/alienhotdog.png')
-  game.load.image('aliensubject', 'assets/images/aliensubject.png')
-
-  game.load.image('chickenfeathers', 'assets/images/chickenfeathers.png')
-  game.load.image('rawchickenhotdog', 'assets/images/rawchickenhotdog.png')
-  game.load.image('chickenhotdog', 'assets/images/chickenhotdog.png')
-  game.load.image('chickensubject', 'assets/images/chickensubject.png')
-
-  game.load.image('bloodhead', 'assets/images/bloodhead.png')
-  game.load.image('rawhumanhotdog', 'assets/images/rawhumanhotdog.png')
-  game.load.image('humanhotdog', 'assets/images/humanhotdog.png')
-  game.load.image('humansubject', 'assets/images/humansubject.png')
-
-  game.load.image('selected', 'assets/images/selected.png')
-  game.load.image('selectedme', 'assets/images/selectedme.png')
-  game.load.image('delete', 'assets/images/delete.png')
-
   game.load.image('planet', 'assets/images/planet.png')
 
   game.load.image('spaceBG', 'assets/images/starfield.png')
@@ -130,10 +91,6 @@ var glob = {
 }
 window.glob = glob
 
-var tiles
-var items
-var money = 0
-
 var selectedItemIndex = 0
 var itemCostStr = '...'
 var uiText
@@ -142,13 +99,6 @@ var UI_BACK_POS = {x: (-448 + 0), y: (-252 + 0)}
 var UI_ICON_POS = {x: (-448 + 15), y: (-252 + 36)}
 var UI_TEXT_POS = {x: (-448 + 60), y: (-252 + 30)}
 
-var currentSpeed = 0
-var cursors
-
-var GRID_SIZE = 16
-
-var tileGroup
-var itemGroup
 var planetGroup
 var playerGroup
 var uiGroup
@@ -188,12 +138,11 @@ function create () {
   tiles = {}
   items = {}
 
-  uiGroup.create(UI_BACK_POS.x, UI_BACK_POS.y, 'ui')
-  uiIcon = game.add.sprite(UI_ICON_POS.x, UI_ICON_POS.y, 'uparrow')
-  uiGroup.add(uiIcon)
+  //uiGroup.create(UI_BACK_POS.x, UI_BACK_POS.y, 'ui')
+  //uiIcon = game.add.sprite(UI_ICON_POS.x, UI_ICON_POS.y, 'uparrow')
+  //uiGroup.add(uiIcon)
   uiText = game.add.text(UI_TEXT_POS.x, UI_TEXT_POS.y, "...", {font: 'Courier 10pt'})
   uiGroup.add(uiText)
-  selectUIElement(0)
 
   // TODO MAKE Kii create these
   for (var i = 0; i < 8; i++) {
@@ -220,10 +169,6 @@ var setEventHandlers = function () {
   // Player removed message received
   socket.on('remove player', onRemovePlayer)
 
-  // map was updated
-  socket.on('update map', onMapUpdate)
-
-  socket.on('update tile cost', onUpdateTileCost)
   socket.on('update player info', onUpdatePlayerInfo)
   socket.on('update planet info', onUpdatePlanetInfo)
 
@@ -321,51 +266,6 @@ function onRemovePlayer (data) {
   glob.otherPlayers.splice(glob.otherPlayers.indexOf(removePlayer), 1)
 }
 
-function onMapUpdate (data) {
-  var tempItems = data.items
-  var tempTiles = data.tiles
-  money = data.money
-
-  for (var loc in tiles) {
-    if (tiles.hasOwnProperty(loc) && tiles[loc] != null) {
-      tileGroup.remove(tiles[loc], true)
-      tiles[loc] = null
-    }
-  }
-  for (var loc in items) {
-    if (items.hasOwnProperty(loc) && items[loc] != null) {
-      itemGroup.remove(items[loc], true)
-      items[loc] = null
-    }
-  }
-
-  for (var loc in data.tiles) {
-    var tileId = data.tiles[loc]
-    if (tileId) {
-      var bits = loc.split(',')
-      var x = parseInt(bits[0])
-      var y = parseInt(bits[1])
-      tiles[loc] = tileGroup.create(x * 16, y * 16, tileSprites[tileId])
-      //tiles[loc] = game.add.sprite(x * 16, y * 16, tileSprites[tileId])
-    }
-  }
-  for (var loc in data.items) {
-    var itemId = data.items[loc]
-    if (itemId) {
-      var bits = loc.split(',')
-      var x = parseInt(bits[0])
-      var y = parseInt(bits[1])
-      items[loc] = itemGroup.create(x * 16, y * 16, itemSprites[itemId])
-      //items[loc] = game.add.sprite(x * 16, y * 16, itemSprites[itemId])
-    }
-  }
-}
-
-function onUpdateTileCost (data) {
-  itemCostStr = data.cost.toString()
-  updateUI()
-}
-
 function onUpdatePlayerInfo (data) {
   if (null != player && data.playerID === player.playerID) {
     queryPlayerInfo(player, data.playerID)
@@ -401,8 +301,7 @@ function queryPlayerInfo (playerObj, playerID) {
         console.log("Multiple PlayerInfos for " + playerID)
       }
       console.log(playerID + ": PlayerInfo query successful")
-      console.log(result[0])
-      //playerObj.setPlayerInfo(result[0])
+      playerObj.setPlayerInfo(result[0]["_customInfo"])
     } else {
       console.log(playerID + ": PlayerInfo query failed, returned no objects")
     }
@@ -414,20 +313,6 @@ function queryPlayerInfo (playerObj, playerID) {
 
 function queryPlanetInfo(planetObj, planetID) {
   // TODO
-}
-
-function selectUIElement (indexDelta) {
-  selectedItemIndex += indexDelta
-  if (selectedItemIndex >= tileDisplayOrder.length) {
-    selectedItemIndex -= tileDisplayOrder.length
-  }
-  if (selectedItemIndex < 0) {
-    selectedItemIndex += tileDisplayOrder.length
-  }
-  itemCostStr = '...'
-  data = {tileId: tileDisplayOrder[selectedItemIndex]}
-  socket.emit('query tile cost', data)
-  updateUI()
 }
 
 
@@ -469,24 +354,11 @@ function update () {
   //uiGroup.y = game.camera.y - UI_BACK_POS.y
 
   updateUI()
-
-  countdown--
-  if (countdown === 0) {
-    countdown = MAXCOUNT
-    socket.emit('query map', {})
-  }
 }
 
 function updateUI () {
-  var tileId = tileDisplayOrder[selectedItemIndex]
 
-  uiGroup.remove(uiIcon)
-  uiIcon.destroy(true)
-  uiIcon = game.add.sprite(UI_ICON_POS.x, UI_ICON_POS.y, tileSprites[tileId])
-  uiGroup.add(uiIcon)
-  uiIcon.bringToTop()
-  uiText.setText(tileNames[tileId] + '\nCost: ' + itemCostStr
-      + '\nMoney: ' + money.toString())
+  uiText.setText("hi :)")
 }
 
 function render () {
