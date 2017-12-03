@@ -158,6 +158,7 @@ function create () {
   // TODO remove for release????
   game.stage.disableVisibilityChange = true;
   socket = io.connect()
+  Kii.initializeWithSite("l1rxzy4xclvo", "f662ebb1125548bc84626f5264eb11b4", KiiSite.US)
   // Start listening for events
   setEventHandlers()
 
@@ -194,19 +195,11 @@ function create () {
   uiGroup.add(uiText)
   selectUIElement(0)
 
-  Kii.initializeWithSite("l1rxzy4xclvo", "f662ebb1125548bc84626f5264eb11b4", KiiSite.US)
-
   // TODO MAKE Kii create these
   for (var i = 0; i < 8; i++) {
-    var planet = new Planet("doop", game, planetGroup, -1500 + Math.random() * 3000, -1500 + Math.random() * 3000, 1 + Math.random() * .1)
+    var planet = new Planet("doop", game, planetGroup, -1500 + Math.random() * 3000, -1500 + Math.random() * 3000, .4 + Math.random() * .1)
     glob.planets.push(planet)
   }
-}
-
-function setKeyCallbacks () {
-  //game.input.keyboard.addKey(Phaser.Keyboard.Z).onDown.add(function () {
-  //   selectUIElement(-1);
-  //});
 }
 
 var setEventHandlers = function () {
@@ -255,20 +248,9 @@ function onConfirmID (data) {
   console.log("confirmed my ID: " + data.playerID)
   window.localStorage.setItem("preferredID", data.playerID)
 
-  player = playerGroup.create(startX, startY, 'playerbee')
-  player.playerID = data.playerID
-  player.body.drag = new Phaser.Point(600, 600)
-  player.animations.add("fly", [0, 1], 10, true);
-  player.animations.play("fly")
-  //player = game.add.sprite(startX, startY, 'selected')
-  player.anchor.setTo(0.5, 0.5)
-  glob.intermittents.push(new IntermittentUpdater(function () {
-    socket.emit('move player', { x: player.x, y: player.y, vx: player.body.velocity.x, vy: player.body.velocity.y, angle: player.angle })
-  }, 30))
-  player.bringToTop()
-  setKeyCallbacks()
+  player = new LocalPlayer(data.playerID, playerGroup, startX, startY)
 
-  game.camera.follow(player, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT, 0.3, 0.3)
+  game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT, 0.3, 0.3)
   game.camera.focusOnXY(startX, startY)
 }
 
@@ -277,7 +259,7 @@ function onNewPlayer (data) {
   console.log('New player connected:', data.playerID)
 
   // Add new player to the remote players array
-  var remote = new RemotePlayer(data.playerID, game, playerGroup, data.x, data.y)
+  var remote = new RemotePlayer(data.playerID, playerGroup, data.x, data.y)
   glob.otherPlayers.push(remote)
 }
 
@@ -291,12 +273,8 @@ function onMovePlayer (data) {
     return
   }
 
-  // Update player position
-  //movePlayer.player.x = data.x
-  //movePlayer.player.y = data.y
-  //movePlayer.player.body.velocity = new Phaser.Point(data.vx, data.vy)
   movePlayer.setTargetPos(data.x, data.y)
-  movePlayer.player.angle = data.angle
+  movePlayer.gameObj.angle = data.angle
 }
 
 // Remove player
@@ -309,8 +287,8 @@ function onRemovePlayer (data) {
     return
   }
 
-  playerGroup.remove(removePlayer.player)
-  removePlayer.player.kill()
+  playerGroup.remove(removePlayer.gameObj)
+  removePlayer.gameObj.kill()
 
   // Remove player from array
   glob.otherPlayers.splice(glob.otherPlayers.indexOf(removePlayer), 1)
@@ -390,19 +368,15 @@ var MAXKEYCOUNT = 8
 var keyCountdown = MAXKEYCOUNT
 var ZERO_POINT = new Phaser.Point(0, 0)
 function update () {
-  //  only move when you click
-  if (game.input.activePointer.isDown
-      && Phaser.Point.subtract(
-      new Phaser.Point(game.input.activePointer.worldX, game.input.activePointer.worldY), player.position)
-      .getMagnitude() > 70) {
-    game.physics.arcade.moveToPointer(player, 500);
-    player.angle = player.body.angle * Phaser.Math.RAD_TO_DEG
-  } else {
-    //player.body.velocity.setTo(0, 0);
+  if (null != player) {
+    player.update()
   }
-
   for (var i = 0; i < glob.intermittents.length; i++) {
     glob.intermittents[i].update()
+    if (glob.intermittents[i].finished) {
+        glob.intermittents.splice(i, 1)
+        i--
+    }
   }
   for (var i = 0; i < glob.otherPlayers.length; i++) {
     glob.otherPlayers[i].update()
