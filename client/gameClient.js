@@ -115,6 +115,9 @@ var socket // Socket connection
 var land
 
 var player
+// The base of our player
+var startX = 0
+var startY = 0
 
 var glob = {
   intermittents: [],
@@ -146,6 +149,9 @@ var uiGroup
 
 function create () {
   socket = io.connect()
+  // Start listening for events
+  setEventHandlers()
+
   game.physics.startSystem(Phaser.Physics.ARCADE)
   // Resize our game world to be a 2000 x 2000 square
   game.world.setBounds(-512, -512, 1024, 1024)
@@ -161,30 +167,13 @@ function create () {
   uiGroup = game.add.group();
   uiGroup.fixedToCamera = true
 
-  // The base of our player
-  var startX = 0
-  var startY = 0
+  // Init all the player stuff in the confirm ID callback
 
-  player = playerGroup.create(startX, startY, 'playerbee')
-  player.body.drag = new Phaser.Point(600, 600)
-  player.animations.add("fly", [0, 1], 10, true);
-  player.animations.play("fly")
-  //player = game.add.sprite(startX, startY, 'selected')
-  player.anchor.setTo(0.5, 0.5)
-  glob.intermittents.push(new IntermittentUpdater(15, function () {
-    socket.emit('move player', { x: player.x, y: player.y, vx: player.body.velocity.x, vy: player.body.velocity.y, angle: player.angle })
-  }))
-
-  // This will force it to decelerate and limit its speed
-  // player.body.drag.setTo(200, 200)
-  //player.body.maxVelocity.setTo(0, 0)
-  //player.body.collideWorldBounds = true
 
   // cave, blender, packer, oven, moneybag
   tiles = {}
   items = {}
 
-  player.bringToTop()
 
   game.camera.follow(player)
   game.camera.deadzone = new Phaser.Rectangle(200, 150, 500, 200)
@@ -197,32 +186,13 @@ function create () {
   uiGroup.add(uiText)
   selectUIElement(0)
 
-  setKeyCallbacks()
-  // Start listening for events
-  setEventHandlers()
-
   Kii.initializeWithSite("l1rxzy4xclvo", "f662ebb1125548bc84626f5264eb11b4", KiiSite.US)
 }
 
 function setKeyCallbacks () {
-  cursors = game.input.keyboard.createCursorKeys()
-  cursors.left.onDown.add(function () { movePlayer(-1, 0); keyCountdown = MAXKEYCOUNT }, this, 0)
-  cursors.right.onDown.add(function () { movePlayer(1, 0); keyCountdown = MAXKEYCOUNT }, this, 0)
-  cursors.up.onDown.add(function () { movePlayer(0, -1); keyCountdown = MAXKEYCOUNT }, this, 0)
-  cursors.down.onDown.add(function () { movePlayer(0, 1); keyCountdown = MAXKEYCOUNT }, this, 0)
-
-  game.input.keyboard.addKey(Phaser.Keyboard.Z).onDown.add(function () {
-    selectUIElement(-1);
-  });
-  game.input.keyboard.addKey(Phaser.Keyboard.X).onDown.add(function () {
-    selectUIElement(1);
-  });
-  game.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(function () {
-    socket.emit('change tile',
-        {tileId: tileDisplayOrder[selectedItemIndex],
-        x: Math.round(player.x / 16),
-        y: Math.round(player.y / 16)})
-  });
+  //game.input.keyboard.addKey(Phaser.Keyboard.Z).onDown.add(function () {
+  //   selectUIElement(-1);
+  //});
 }
 
 var setEventHandlers = function () {
@@ -232,6 +202,8 @@ var setEventHandlers = function () {
   // Socket disconnection
   socket.on('disconnect', onSocketDisconnect)
 
+  // log in with cached ID
+  socket.on('confirm id', onConfirmID)
   // New player message received
   socket.on('new player', onNewPlayer)
 
@@ -255,8 +227,9 @@ var setEventHandlers = function () {
 function onSocketConnected () {
   console.log('Connected to socket server')
 
+  var preferredID = window.localStorage.getItem("preferredID")
   // Send local player data to the game server
-  socket.emit('new player', { x: player.x, y: player.y })
+  socket.emit('new player', { preferredID: preferredID, x: startX, y: startY })
 }
 
 // Socket disconnected
@@ -264,22 +237,41 @@ function onSocketDisconnect () {
   console.log('Disconnected from socket server')
 }
 
+function onConfirmID (data) {
+  console.log("confirmed my ID: " + data.playerID)
+  window.localStorage.setItem("preferredID", data.playerID)
+
+  player = playerGroup.create(startX, startY, 'playerbee')
+  player.playerID = data.playerID
+  player.body.drag = new Phaser.Point(600, 600)
+  player.animations.add("fly", [0, 1], 10, true);
+  player.animations.play("fly")
+  //player = game.add.sprite(startX, startY, 'selected')
+  player.anchor.setTo(0.5, 0.5)
+  glob.intermittents.push(new IntermittentUpdater(15, function () {
+    socket.emit('move player', { x: player.x, y: player.y, vx: player.body.velocity.x, vy: player.body.velocity.y, angle: player.angle })
+  }))
+  player.bringToTop()
+  setKeyCallbacks()
+
+}
+
 // New player
 function onNewPlayer (data) {
-  console.log('New player connected:', data.id)
+  console.log('New player connected:', data.playerID)
 
   // Add new player to the remote players array
-  var remote = new RemotePlayer(data.id, game, playerGroup, data.x, data.y)
+  var remote = new RemotePlayer(data.playerID, game, playerGroup, data.x, data.y)
   glob.otherPlayers.push(remote)
 }
 
 // Move player
 function onMovePlayer (data) {
-  var movePlayer = playerById(data.id)
+  var movePlayer = playerByPlayerID(data.playerID)
 
   // Player not found
-  if (!movePlayer) {
-    console.log('Player not found: ', data.id)
+  if (null == movePlayer) {
+    console.log('Player not found: ', data.playerID)
     return
   }
 
@@ -292,11 +284,11 @@ function onMovePlayer (data) {
 
 // Remove player
 function onRemovePlayer (data) {
-  var removePlayer = playerById(data.id)
+  var removePlayer = playerByPlayerID(data.playerID)
 
   // Player not found
   if (!removePlayer) {
-    console.log('Player not found: ', data.id)
+    console.log('Player not found: ', data.playerID)
     return
   }
 
@@ -427,14 +419,14 @@ function render () {
 }
 
 // Find player by ID
-function playerById (id) {
+function playerByPlayerID (playerID) {
   for (var i = 0; i < glob.otherPlayers.length; i++) {
-    if (glob.otherPlayers[i].player.name === id) {
+    if (glob.otherPlayers[i].playerID === playerID) {
       return glob.otherPlayers[i]
     }
   }
 
-  return false
+  return null
 }
 
 // TEMP CHAT SYSTEM
