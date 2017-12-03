@@ -61,7 +61,7 @@ var itemSprites = {
   16: 'aliensubject',
 }
 
-var game = new Phaser.Game(896, 504, Phaser.AUTO, 'gameContainer',
+var game = new Phaser.Game(513, 912, Phaser.AUTO, 'gameContainer',
     { preload: preload, create: create, update: update, render: render })
 
 function preload () {
@@ -153,11 +153,10 @@ function create () {
   setEventHandlers()
 
   game.physics.startSystem(Phaser.Physics.ARCADE)
-  // Resize our game world to be a 2000 x 2000 square
-  game.world.setBounds(-512, -512, 1024, 1024)
+  game.world.setBounds(-5120, -5120, 10240, 10240)
 
   // Our tiled scrolling background
-  land = game.add.tileSprite(0, 0, 896, 504, 'earth')
+  land = game.add.tileSprite(0, 0, 513, 912, 'earth')
   land.fixedToCamera = true
 
   tileGroup = game.add.group();
@@ -173,11 +172,6 @@ function create () {
   // cave, blender, packer, oven, moneybag
   tiles = {}
   items = {}
-
-
-  game.camera.follow(player)
-  game.camera.deadzone = new Phaser.Rectangle(200, 150, 500, 200)
-  game.camera.focusOnXY(0, 0)
 
   uiGroup.create(UI_BACK_POS.x, UI_BACK_POS.y, 'ui')
   uiIcon = game.add.sprite(UI_ICON_POS.x, UI_ICON_POS.y, 'uparrow')
@@ -254,6 +248,8 @@ function onConfirmID (data) {
   player.bringToTop()
   setKeyCallbacks()
 
+  game.camera.follow(player, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT, 0.3, 0.3)
+  game.camera.focusOnXY(startX, startY)
 }
 
 // New player
@@ -388,8 +384,8 @@ function update () {
   for (var i = 0; i < glob.otherPlayers.length; i++) {
     glob.otherPlayers[i].update()
   }
-  land.tilePosition.x = -game.camera.x
-  land.tilePosition.y = -game.camera.y
+  land.tilePosition.x = -game.camera.x / 3
+  land.tilePosition.y = -game.camera.y / 3
   uiGroup.x = game.camera.x - UI_BACK_POS.x
   uiGroup.y = game.camera.y - UI_BACK_POS.y
 
