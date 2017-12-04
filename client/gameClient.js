@@ -6,7 +6,8 @@ function preload () {
 
   game.load.image('spaceBG', 'assets/images/starfield.png')
   game.load.image('spaceFG', 'assets/images/dustfield.png')
-  game.load.image('ui', 'assets/images/UI.png')
+  game.load.image('shout', 'assets/images/shout.png')
+  game.load.image('pressshout', 'assets/images/pressShout.png')
 
   game.load.spritesheet('playerbee', 'assets/images/bigbee.png', 64, 64)
 }
@@ -25,6 +26,7 @@ var glob = {
   intermittents: [],
   otherPlayers: [],
   planets: [],
+  shouts: []
 }
 window.glob = glob
 
@@ -69,10 +71,25 @@ function create () {
   uiGroup = game.add.group();
   uiGroup.fixedToCamera = true
 
-  uiText = game.add.text(100, 100, "testing", {font: 'Courier 50pt'}, uiGroup)
+  uiText = uiGroup.create(250, 150, "pressshout")
+  uiText.anchor.setTo(0.5, 0.5)
+  uiText.inputEnabled = true;
+  uiText.events.onInputDown.add(clickShout, uiText);
 }
 
-var setEventHandlers = function () {
+function clickShout () {
+  clickUsedByUI = true // ALWAYS DO THIS FIRST
+  if (null != player) {
+    socket.emit('shout', {playerID: player.playerID})
+  }
+}
+
+function onShout (data) {
+  var shout = new Shout(data.playerID)
+  glob.shouts.push(shout)
+}
+
+function setEventHandlers () {
   // Socket connection successful
   socket.on('connect', onSocketConnected)
 
@@ -93,6 +110,7 @@ var setEventHandlers = function () {
   socket.on('update player info', onUpdatePlayerInfo)
   socket.on('update planet info', onUpdatePlanetInfo)
 
+  socket.on('shout', onShout)
   socket.on('chat message', onReceiveChat)
   // server side only
   //socket.on('change tile', onChangeTile)
@@ -127,7 +145,7 @@ function onConfirmID (data) {
   })
 }
 
-tryKiiLogin = function (playerID, successCallback) {
+function tryKiiLogin (playerID, successCallback) {
   var username = playerID;
   var password = "password9001";
   KiiUser.authenticate(username, password).then(function (user) {
@@ -320,6 +338,9 @@ function update () {
   for (var i = 0; i < glob.planets.length; i++) {
     glob.planets[i].update()
   }
+  for (var i = 0; i < glob.shouts.length; i++) {
+    glob.shouts[i].update()
+  }
   spaceBG.tilePosition.x = -game.camera.x / 3
   spaceBG.tilePosition.y = -game.camera.y / 3
   spaceFG.tilePosition.x = -game.camera.x
@@ -334,7 +355,6 @@ function updateUI () {
   if (!game.input.activePointer.isDown) {
     clickUsedByUI = false
   }
-  uiText.setText("hi :)")
 }
 
 function render () {
