@@ -1,66 +1,3 @@
-/* global Phaser RemotePlayer io */
-
-var tileSprites = {
-  0: 'delete',
-  1: 'downarrow',
-  2: 'uparrow',
-  3: 'leftarrow',
-  4: 'rightarrow',
-  5: 'blender',
-  6: 'pigbarn',
-  7: 'moneybag',
-  8: 'oven',
-  9: 'packer',
-
-  10: 'chickencoop',
-  11: 'cave',
-  12: 'alienufo',
-
-  13: 'fence',
-}
-
-var tileNames = {
-  0: 'Delete',
-  1: 'Down Conveyor',
-  2: 'Up Conveyor',
-  3: 'Left Conveyor',
-  4: 'Right Conveyor',
-  5: 'Blender',
-  6: 'Pig Barn',
-  7: 'Seller',
-  8: 'Oven',
-  9: 'Packer',
-
-  10: 'Chicken Coop',
-  11: 'Smelly Cave',
-  12: 'SPACESHIP',
-  13: 'Fence',
-}
-
-var tileDisplayOrder = [2, 1, 3, 4, 13, 5, 9, 8, 7, 6, 10, 11, 12, 0]
-
-var itemSprites = {
-  1: 'blood',
-  2: 'rawhotdog',
-  3: 'hotdog',
-  4: 'pigsubject',
-
-  5: 'chickenfeathers',
-  6: 'rawchickenhotdog',
-  7: 'chickenhotdog',
-  8: 'chickensubject',
-
-  9: 'bloodhead',
-  10: 'rawhumanhotdog',
-  11: 'humanhotdog',
-  12: 'humansubject',
-
-  13: 'alienblood',
-  14: 'rawalienhotdog',
-  15: 'alienhotdog',
-  16: 'aliensubject',
-}
-
 var game = new Phaser.Game(513, 912, Phaser.AUTO, 'gameContainer',
     { preload: preload, create: create, update: update, render: render })
 
@@ -98,6 +35,7 @@ var uiIcon
 var UI_BACK_POS = {x: (-448 + 0), y: (-252 + 0)}
 var UI_ICON_POS = {x: (-448 + 15), y: (-252 + 36)}
 var UI_TEXT_POS = {x: (-448 + 60), y: (-252 + 30)}
+var clickUsedByUI = false
 
 var planetGroup
 var playerGroup
@@ -131,24 +69,7 @@ function create () {
   uiGroup = game.add.group();
   uiGroup.fixedToCamera = true
 
-  // Init all the player stuff in the confirm ID callback
-
-
-  // cave, blender, packer, oven, moneybag
-  tiles = {}
-  items = {}
-
-  //uiGroup.create(UI_BACK_POS.x, UI_BACK_POS.y, 'ui')
-  //uiIcon = game.add.sprite(UI_ICON_POS.x, UI_ICON_POS.y, 'uparrow')
-  //uiGroup.add(uiIcon)
-  uiText = game.add.text(UI_TEXT_POS.x, UI_TEXT_POS.y, "...", {font: 'Courier 10pt'})
-  uiGroup.add(uiText)
-
-  // TODO MAKE Kii create these
-  for (var i = 0; i < 8; i++) {
-    var planet = new Planet("doop", planetGroup, -1500 + Math.random() * 3000, -1500 + Math.random() * 3000, .4 + Math.random() * .1)
-    glob.planets.push(planet)
-  }
+  uiText = game.add.text(100, 100, "testing", {font: 'Courier 50pt'}, uiGroup)
 }
 
 var setEventHandlers = function () {
@@ -202,6 +123,7 @@ function onConfirmID (data) {
     game.camera.focusOnXY(startX, startY)
 
     queryPlayerInfo(player, player.playerID)
+    queryAllPlanets()
   })
 }
 
@@ -279,9 +201,12 @@ function onUpdatePlayerInfo (data) {
 
 function onUpdatePlanetInfo (data) {
   var planet = planetByID(data.planetID)
-  if (null != otherPlanet) {
-    queryPlanetInfo(otherPlanet, data.planetID)
+  if (null == planet) {
+    console.log("Creating new planet to query: " + data.planetID)
+    var planet = new Planet(data.planetID, planetGroup, -4000, -4000, 2) // create offscreen
+    glob.planets.push(planet)
   }
+  queryPlanetInfo(planet, data.planetID)
 }
 
 function queryPlayerInfo (playerObj, playerID) {
@@ -312,7 +237,56 @@ function queryPlayerInfo (playerObj, playerID) {
 }
 
 function queryPlanetInfo(planetObj, planetID) {
-  // TODO
+  if (null == planetObj) {
+    return
+  }
+  var queryObject = KiiQuery.queryWithClause(KiiClause.equals("planetid", planetID));
+  queryObject.sortByDesc("_created");
+
+  var bucket = Kii.bucketWithName("Planets");
+  bucket.executeQuery(queryObject).then(function (params) {
+    var queryPerformed = params[0];
+    var result = params[1];
+    var nextQuery = params[2]; // if there are more results
+    if (result.length > 0) {
+      if (result.length > 1) {
+        console.log("Multiple Planets for " + planetID)
+      }
+      console.log(planetID + ": Planet query successful")
+      planetObj.setPlanetInfo(result[0]._customInfo)
+    } else {
+      console.log(planetID + ": Planet query failed, returned no objects")
+    }
+  }).catch(function (error) {
+    var errorString = "" + error.code + ":" + error.message;
+    console.log(planetID + ": Planet query failed, unable to execute query: " + errorString);
+  });
+}
+
+function queryAllPlanets() {
+  for (var i = 0; i < glob.planets.length; i++) {
+    glob.planets[i].gameObj.destroy()
+  }
+  glob.planets = []
+  var queryObject = KiiQuery.queryWithClause(null);
+  queryObject.sortByDesc("_created");
+
+  var bucket = Kii.bucketWithName("Planets");
+  bucket.executeQuery(queryObject).then(function (params) {
+    var queryPerformed = params[0];
+    var result = params[1];
+    var nextQuery = params[2]; // if there are more results
+    console.log("Successfully queried number of planets: " + result.length)
+    for (var i = 0; i < result.length; i++) {
+      var planetInfo = result[i]["_customInfo"]
+      var planet = new Planet(planetInfo["planetid"], planetGroup, planetInfo["x"], planetInfo["y"], planetInfo["size"])
+      planet.setPlanetInfo(planetInfo)
+      glob.planets.push(planet)
+    }
+  }).catch(function (error) {
+    var errorString = "" + error.code + ":" + error.message;
+    console.log("All Planets query failed, unable to execute query: " + errorString);
+  });
 }
 
 
@@ -357,7 +331,9 @@ function update () {
 }
 
 function updateUI () {
-
+  if (!game.input.activePointer.isDown) {
+    clickUsedByUI = false
+  }
   uiText.setText("hi :)")
 }
 
