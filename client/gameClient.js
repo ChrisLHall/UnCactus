@@ -135,7 +135,7 @@ function onConfirmID (data) {
   window.localStorage.setItem("preferredID", data.playerID)
 
   tryKiiLogin(data.playerID, function () {
-    player = new LocalPlayer(data.playerID, playerGroup, startX, startY)
+    player = new LocalPlayer(data.playerID, playerGroup, startX, startY, Player.generateNewInfo(data.playerID))
 
     game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT, 0.3, 0.3)
     game.camera.focusOnXY(startX, startY)
@@ -221,7 +221,8 @@ function onUpdatePlanetInfo (data) {
   var planet = planetByID(data.planetID)
   if (null == planet) {
     console.log("Creating new planet to query: " + data.planetID)
-    var planet = new Planet(data.planetID, planetGroup, -4000, -4000, 2) // create offscreen
+    var fakeInfo = Planet.generateNewInfo(data.planetID, -4000, -4000, "")
+    var planet = new LocalPlanet(data.planetID, planetGroup, fakeInfo) // create offscreen
     glob.planets.push(planet)
   }
   queryPlanetInfo(planet, data.planetID)
@@ -244,7 +245,7 @@ function queryPlayerInfo (playerObj, playerID) {
         console.log("Multiple PlayerInfos for " + playerID)
       }
       console.log(playerID + ": PlayerInfo query successful")
-      playerObj.setPlayerInfo(result[0]["_customInfo"])
+      playerObj.setInfo(result[0]["_customInfo"])
     } else {
       console.log(playerID + ": PlayerInfo query failed, returned no objects")
     }
@@ -271,7 +272,7 @@ function queryPlanetInfo(planetObj, planetID) {
         console.log("Multiple Planets for " + planetID)
       }
       console.log(planetID + ": Planet query successful")
-      planetObj.setPlanetInfo(result[0]._customInfo)
+      planetObj.setInfo(result[0]._customInfo)
     } else {
       console.log(planetID + ": Planet query failed, returned no objects")
     }
@@ -296,9 +297,8 @@ function queryAllPlanets() {
     var nextQuery = params[2]; // if there are more results
     console.log("Successfully queried number of planets: " + result.length)
     for (var i = 0; i < result.length; i++) {
-      var planetInfo = result[i]["_customInfo"]
-      var planet = new Planet(planetInfo["planetid"], planetGroup, planetInfo["x"], planetInfo["y"], planetInfo["size"])
-      planet.setPlanetInfo(planetInfo)
+      var planetInfo = result[i]._customInfo
+      var planet = new LocalPlanet(planetInfo.planetid, planetGroup, planetInfo)
       glob.planets.push(planet)
     }
   }).catch(function (error) {

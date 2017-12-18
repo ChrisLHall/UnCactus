@@ -6,12 +6,13 @@ var http = require('http').Server(app)
 var io = require('socket.io')(http, {origins:'localhost:* 192.168.*.*:* http://chrislhall.net:* http://www.chrislhall.net:* http://chrislhall.net/bees http://www.chrislhall.net/bees'})
 var uuidv4 = require('uuid/v4')
 
-var ServerPlayer = require('./ServerPlayer')
-var ServerPlanet = require('./ServerPlanet')
+var Player = require('../Common/Player')
+var Planet = require('../Common/Planet')
+var CommonUtil = require('../Common/CommonUtil')
 var kii = require('kii-cloud-sdk').create()
 var KiiServerCreds = require('./KiiServerCreds')()
 
-var port = process.env.PORT || 4444
+var port = process.env.PORT || 4545
 
 var players	// Array of connected players
 var planets // Array of planets
@@ -128,7 +129,7 @@ function onNewPlayer (data) {
   }
   console.log("playerID of new player: " + newPlayerID)
   // Create a new player
-  var newPlayer = new ServerPlayer(data.x, data.y, newPlayerID, this)
+  var newPlayer = new Player(data.x, data.y, newPlayerID, this)
   getOrInitPlayerInfo(newPlayer, newPlayer.playerID)
 
   this.emit('confirm id', {playerID: newPlayer.playerID})
@@ -193,20 +194,20 @@ function inStartTiles (x, y) {
 }
 
 function createHomePlanet(playerID) {
-  var planet = new ServerPlanet(uuidv4())
-  var planetInfo = ServerPlanet.generateNewPlanetInfo(planet.planetID, -1800 + Math.random() * 3600, -1800 + Math.random() * 3600, .3 + Math.random() * .2, playerID)
+  var planet = new Planet(uuidv4())
+  var planetInfo = Planet.generateNewInfo(planet.planetID, -1800 + Math.random() * 3600, -1800 + Math.random() * 3600, playerID)
   planet.info = planetInfo
   return planet
 }
 
 function createEmptyPlanet() {
-  var planet = new ServerPlanet(uuidv4())
-  var planetInfo = ServerPlanet.generateNewPlanetInfo(planet.planetID, -1800 + Math.random() * 3600, -1800 + Math.random() * 3600, .3 + Math.random() * .2, "")
+  var planet = new Planet(uuidv4())
+  var planetInfo = Planet.generateNewInfo(planet.planetID, -1800 + Math.random() * 3600, -1800 + Math.random() * 3600, "")
   planet.info = planetInfo
   return planet
 }
 
-function getOrInitPlayerInfo(serverPlayer, playerID) {
+function getOrInitPlayerInfo(player, playerID) {
   var queryObject = kii.KiiQuery.queryWithClause(kii.KiiClause.equals("playerid", playerID));
   queryObject.sortByDesc("_created");
 
@@ -220,11 +221,13 @@ function getOrInitPlayerInfo(serverPlayer, playerID) {
         console.log("Multiple PlayerInfos for " + playerID)
       }
       console.log(playerID + ": PlayerInfo query successful")
-      serverPlayer.kiiObj = result[0]
-      serverPlayer.info = result[0]._customInfo
+      player.kiiObj = result[0]
+      var info = result[0]._customInfo
+      CommonUtil.validate(info, Player.generateNewInfo(playerID))
+      player.info = info
     } else {
       console.log(playerID + ": PlayerInfo query failed, returned no objects")
-      setPlayerInfo(null, serverPlayer, playerID, ServerPlayer.generateNewPlayerInfo(playerID))
+      setPlayerInfo(null, player, playerID, Player.generateNewInfo(playerID))
       // create home planet
       var homePlanet = createHomePlanet(playerID)
       planets.push(homePlanet)
@@ -236,7 +239,7 @@ function getOrInitPlayerInfo(serverPlayer, playerID) {
   });
 }
 
-function setPlayerInfo(existingKiiObj, serverPlayer, playerID, playerInfo) {
+function setPlayerInfo(existingKiiObj, player, playerID, playerInfo) {
   var obj = existingKiiObj
   if (null == obj) {
     var bucket = kii.Kii.bucketWithName("PlayerInfo");
@@ -249,10 +252,10 @@ function setPlayerInfo(existingKiiObj, serverPlayer, playerID, playerInfo) {
   }
 
   obj.save().then(function (obj) {
-    serverPlayer.kiiObj = obj
-    serverPlayer.info = obj._customInfo
+    player.kiiObj = obj
+    player.info = obj._customInfo
     console.log(playerID + ": player info save succeeded");
-    serverPlayer.socket.emit('update player info', {playerID: playerID})
+    player.socket.emit('update player info', {playerID: playerID})
   }).catch(function (error) {
     var errorString = "" + error.code + ": " + error.message
     console.log(playerID + ": Unable to create player info: " + errorString);
@@ -273,8 +276,9 @@ function queryAllPlanets() {
     for (var i = 0; i < result.length; i++) {
       var planetResult = result[i]
       var planetInfo = planetResult._customInfo
-      var planet = new ServerPlanet(planetInfo.planetid)
+      var planet = new Planet(planetInfo.planetid)
       planet.kiiObj = planetResult
+      CommonUtil.validate(planetInfo, Planet.generateNewInfo(planetInfo.planetid, 0, 0, ""))
       planet.info = planetInfo
       planets.push(planet)
     }
@@ -299,7 +303,9 @@ function getPlanetInfo(planet, planetID) {
       }
       console.log(planetID + ": Planet query successful")
       planet.kiiObj = result[0]
-      planet.info = result[0]._customInfo
+      var planetInfo = result[0]._customInfo
+      CommonUtil.validate(planetInfo, Planet.generateNewInfo(planetID, 0, 0, ""))
+      planet.info = planetInfo
     } else {
       console.log(planetID + ": Planet query failed, returned no objects")
     }

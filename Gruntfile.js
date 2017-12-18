@@ -3,7 +3,7 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     concat: {
       default: {
-        src: ['client/*.js',],
+        src: ['client/*.js', 'common/*.js'],
         dest: 'build/js/app.js'
       }
     },

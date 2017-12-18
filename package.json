@@ -2,7 +2,7 @@
   "name": "uncactus-game",
   "version": "0.0.1",
   "description": "Phaser example gone multiplayer!",
-  "main": "lib/gameServer.js",
+  "main": "server/gameServer.js",
   "repository" : {
     "type" : "git",
     "url" : "https://github.com/ChrisLHall/UnCactus.git"

@@ -1,27 +1,22 @@
 /* global game */
 
-var Planet = function (planetID, group, startX, startY, size) {
-  var x = startX
-  var y = startY
+var LocalPlanet = function (planetID, group, info) {
 
   this.planetID = planetID
-  this.planetInfo = null
 
-  this.gameObj = group.create(x, y, 'planet')
+  this.gameObj = group.create(info.x, info.y, 'planet')
   this.gameObj.anchor.setTo(0.5, 0.5)
-
-  this.rotSpeed = -.15 + Math.random() * .3
-  this.gameObj.scale = new Phaser.Point(size, size)
-  this.gameObj.tint = Planet.colors[0];
-
   this.gameObj.inputEnabled = true;
   this.gameObj.events.onInputDown.add(this.onClickListener, this);
+
+  this.setInfo(info)
 }
 
 // nobody's, mine, not mine
-Planet.colors = [0xbbbbbb, 0xddffdd, 0xbbeeff]
-Planet.prototype.setPlanetInfo = function (info) {
-  this.playerInfo = info
+LocalPlanet.colors = [0xbbbbbb, 0xddffdd, 0xbbeeff]
+LocalPlanet.prototype.setInfo = function (info) {
+  CommonUtil.validate(info, Planet.generateNewInfo(this.planetID, 0, 0, ""))
+  this.info = info
   if (null != info) {
     var ownerID = info.owner
     var colIdx = 0
@@ -32,7 +27,7 @@ Planet.prototype.setPlanetInfo = function (info) {
     } else {
       colIdx = 2
     }
-    this.gameObj.tint = Planet.colors[colIdx]
+    this.gameObj.tint = LocalPlanet.colors[colIdx]
 
     this.gameObj.scale = new Phaser.Point(info.size, info.size)
     this.gameObj.x = info.x
@@ -40,15 +35,15 @@ Planet.prototype.setPlanetInfo = function (info) {
   }
 }
 
-Planet.prototype.onClickListener = function () {
+LocalPlanet.prototype.onClickListener = function () {
   clickUsedByUI = true // ALWAYS DO THIS FIRST
   if (null != player) {
     player.targetPlanet(this)
   }
 }
 
-Planet.prototype.update = function () {
-  this.gameObj.angle += this.rotSpeed
+LocalPlanet.prototype.update = function () {
+  this.gameObj.angle += this.info.rotSpeed
 }
 
-window.Planet = Planet
+window.LocalPlanet = LocalPlanet

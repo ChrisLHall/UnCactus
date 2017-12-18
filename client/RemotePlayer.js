@@ -1,11 +1,10 @@
 /* global game */
 
-var RemotePlayer = function (playerID, group, startX, startY) {
+var RemotePlayer = function (playerID, group, startX, startY, playerInfo) {
   var x = startX
   var y = startY
 
   this.playerID = playerID
-  this.playerInfo = null
 
   this.gameObj = group.create(x, y, 'playerbee')
   this.gameObj.animations.add("fly", [0, 1], 10, true);
@@ -17,13 +16,16 @@ var RemotePlayer = function (playerID, group, startX, startY) {
 
   this.targetPos = new Phaser.Point(x, y)
   this.lerpSpeed = 6
+
+  this.setInfo(playerInfo)
 }
 
 RemotePlayer.prototype.setColorIndex = function (ind) {
   this.gameObj.tint = LocalPlayer.colors[ind];
 }
 
-RemotePlayer.prototype.setPlayerInfo = function (info) {
+RemotePlayer.prototype.setInfo = function (info) {
+  beeLib.CommonUtil.validate(info, beeLib.Player.generateNewInfo(this.playerID))
   this.playerInfo = info
   if (null != info) {
     this.setColorIndex(info.color)

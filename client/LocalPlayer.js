@@ -1,38 +1,33 @@
-var LocalPlayer = function (playerID, group, startX, startY) {
-  var x = startX
-  var y = startY
-
+var LocalPlayer = function (playerID, group, startX, startY, playerInfo) {
   this.playerID = playerID
-  this.playerInfo = null
 
   this.gameObj = group.create(startX, startY, 'playerbee')
   this.gameObj.animations.add("fly", [0, 1], 10, true);
   this.gameObj.animations.play("fly")
   this.gameObj.anchor.setTo(0.5, 0.5)
   this.gameObj.bringToTop()
-  glob.intermittents.push(new IntermittentUpdater(this, function (host) {
-    socket.emit('move player', { x: host.targetPos.x, y: host.targetPos.y, angle: host.gameObj.angle })
+  glob.intermittents.push(new IntermittentUpdater(this, function () {
+    socket.emit('move player', { x: this.targetPos.x, y: this.targetPos.y, angle: this.gameObj.angle })
   }, 30))
 
   this.gameObj.body.collideWorldBounds = true
   this.gameObj.body.immovable = true
 
-  this.targetPos = new Phaser.Point(x, y)
+  this.targetPos = new Phaser.Point(startX, startY)
   this.lerpSpeed = 5
 
   this.targetPlanetObj = null
   this.sittingOnPlanetObj = null
+
+  this.setInfo(playerInfo)
 }
 
 LocalPlayer.colors = [0xffffff, 0xaaffaa, 0xffccff]
-LocalPlayer.prototype.setColorIndex = function (ind) {
-  this.gameObj.tint = LocalPlayer.colors[ind];
-}
-
-LocalPlayer.prototype.setPlayerInfo = function (info) {
-  this.playerInfo = info
+LocalPlayer.prototype.setInfo = function (info) {
+  CommonUtil.validate(info, Player.generateNewInfo(this.playerID))
+  this.info = info
   if (null != info) {
-    this.setColorIndex(info.color)
+    this.gameObj.tint = LocalPlayer.colors[info.color];
   }
 }
 

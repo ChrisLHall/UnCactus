@@ -17,4 +17,4 @@ node_modules
 build
 
 // do this to ignore changes to server creds:
-// git update-index --assume-unchanged lib/KiiServerCreds.js
+// git update-index --assume-unchanged server/KiiServerCreds.js

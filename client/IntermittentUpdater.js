@@ -15,7 +15,7 @@ IntermittentUpdater.prototype.update = function () {
   }
   this.counter++
   if (this.counter >= this.countMax) {
-    this.intermittentFunc(this.host)
+    this.intermittentFunc.call(this.host)
     this.counter = 0
   }
 }
