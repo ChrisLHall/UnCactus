@@ -9,6 +9,8 @@ function preload () {
   game.load.image('shout', 'assets/images/shout.png')
   game.load.image('pressshout', 'assets/images/pressShout.png')
 
+  game.load.image('cactus1', 'assets/images/cactus1_sheet.png')
+
   game.load.spritesheet('playerbee', 'assets/images/bigbee.png', 64, 64)
 }
 
