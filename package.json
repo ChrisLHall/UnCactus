@@ -1,6 +1,6 @@
 {
   "name": "uncactus-game",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Phaser example gone multiplayer!",
   "main": "server/gameServer.js",
   "repository" : {

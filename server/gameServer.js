@@ -8,6 +8,7 @@ var uuidv4 = require('uuid/v4')
 
 var Player = require('../Common/Player')
 var Planet = require('../Common/Planet')
+var Cactus = require('../Common/Cactus')
 var CommonUtil = require('../Common/CommonUtil')
 var kii = require('kii-cloud-sdk').create()
 var KiiServerCreds = require('./KiiServerCreds')()
