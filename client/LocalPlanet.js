@@ -10,6 +10,13 @@ var LocalPlanet = function (planetID, group, info) {
   this.gameObj.events.onInputDown.add(this.onClickListener, this);
 
   this.setInfo(info)
+
+  this.inhabitants = []
+  // TODO TESTING cacti
+  for (var i = 0; i < 6; i++) {
+    var cactus = new LocalCactus(this, i, group, {type:"empty"})
+    this.inhabitants.push(cactus)
+  }
 }
 
 // nobody's, mine, not mine
@@ -44,6 +51,12 @@ LocalPlanet.prototype.onClickListener = function () {
 
 LocalPlanet.prototype.update = function () {
   this.gameObj.angle += this.info.rotSpeed
+
+  for (var i = 0; i < this.inhabitants.length; i++) {
+    this.inhabitants[i].update()
+  }
 }
+
+LocalPlanet.ORIG_RADIUS = 115
 
 window.LocalPlanet = LocalPlanet

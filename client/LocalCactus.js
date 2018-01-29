@@ -1,44 +1,36 @@
 /* global game */
 
-var LocalCactus = function (hostPlanetObj, group, info) {
+var LocalCactus = function (hostPlanetObj, placeIdx, group, info) {
+  this.hostPlanetObj = hostPlanetObj
+  this.placeIdx = placeIdx
 
-  this.planetID = planetID
-
-  this.gameObj = group.create(info.x, info.y, 'planet')
-  this.gameObj.anchor.setTo(0.5, 0.5)
-  this.gameObj.inputEnabled = true;
-  this.gameObj.events.onInputDown.add(this.onClickListener, this);
-
+  this.gameObj = group.create(-10000, -10000, 'cactus1')
+  this.gameObj.anchor.setTo(0.5, 0.9)
+  this.gameObj.animations.add("empty", [0], 1, true);
+  for (var i = 1; i <= 3; i++) {
+    this.gameObj.animations.add(i.toString(), [i], 1, true)
+  }
+  this.gameObj.animations.play("3")
+  this.gameObj.scale = new Phaser.Point(this.hostPlanetObj.info.size,
+      this.hostPlanetObj.info.size)
   this.setInfo(info)
 }
 
-// TODO ACTUALLY FIGURE OUT WHAT NEEDS TO GO IN HERE @@@@@@@@@@@@@@@@@
-
-// nobody's, mine, not mine
-LocalCactus.colors = [0xbbbbbb, 0xddffdd, 0xbbeeff]
 LocalCactus.prototype.setInfo = function (info) {
-  CommonUtil.validate(info, Planet.generateNewInfo(this.planetID, 0, 0, ""))
+  CommonUtil.validate(info, Cactus.generateNewInfo("empty", 0))
   this.info = info
   if (null != info) {
-    var ownerID = info.owner
-    var colIdx = 0
-    if (null == ownerID || "" === ownerID) {
-      colIdx = 0
-    } else if (null != player && ownerID === player.playerID) {
-      colIdx = 1
-    } else {
-      colIdx = 2
-    }
-    this.gameObj.tint = LocalCactus.colors[colIdx]
 
-    this.gameObj.scale = new Phaser.Point(info.size, info.size)
-    this.gameObj.x = info.x
-    this.gameObj.y = info.y
   }
 }
 
 LocalCactus.prototype.update = function () {
-  this.gameObj.angle += this.info.rotSpeed
+  var degs = this.hostPlanetObj.gameObj.angle + this.placeIdx * 60
+  this.gameObj.angle = degs + 90
+  var rads = degs * CommonUtil.DEG_TO_RAD
+  var len = LocalPlanet.ORIG_RADIUS * this.hostPlanetObj.info.size
+  this.gameObj.x = this.hostPlanetObj.gameObj.x + len * Math.cos(rads)
+  this.gameObj.y = this.hostPlanetObj.gameObj.y + len * Math.sin(rads)
 }
 
 window.LocalPlanet = LocalPlanet
