@@ -8,12 +8,14 @@
     }
   }
 
-  Cactus.generateNewInfo = function(startType, startTimeUTC) {
+  Cactus.generateNewInfo = function(startType) {
     return {
       type: startType,
-      lastGrowTime: startTimeUTC,
+      age: 0,
     }
   }
+
+  Cactus.GROWTH_AGES = [0, 10, 30]
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Cactus
