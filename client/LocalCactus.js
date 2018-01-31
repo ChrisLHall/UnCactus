@@ -20,7 +20,13 @@ LocalCactus.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Cactus.generateNewInfo("empty"))
   this.info = info
   if (null != info) {
-
+    var frame = 0
+    for (var ageIdx = 0; ageIdx < Cactus.GROWTH_AGES.length; ageIdx++) {
+      if (this.info.age >= Cactus.GROWTH_AGES[ageIdx]) {
+        frame = ageIdx
+      }
+    }
+    this.gameObj.animations.play(frame.toString())
   }
 }
 
@@ -31,17 +37,6 @@ LocalCactus.prototype.update = function () {
   var len = LocalPlanet.ORIG_RADIUS * this.hostPlanetObj.info.size
   this.gameObj.x = this.hostPlanetObj.gameObj.x + len * Math.cos(rads)
   this.gameObj.y = this.hostPlanetObj.gameObj.y + len * Math.sin(rads)
-
-  // TODO this is for testing
-  this.info.age += Math.random() * .02
-
-  var frame = 0
-  for (var ageIdx = 0; ageIdx < Cactus.GROWTH_AGES.length; ageIdx++) {
-    if (this.info.age >= Cactus.GROWTH_AGES[ageIdx]) {
-      frame = ageIdx
-    }
-  }
-  this.gameObj.animations.play(frame.toString())
 }
 
 window.LocalPlanet = LocalPlanet

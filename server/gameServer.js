@@ -17,6 +17,7 @@ var port = process.env.PORT || 4545
 
 var players	// Array of connected players
 var planets // Array of planets
+var currentPlanetIdx = 0 // checking for modified planets
 
 /* ************************************************
 ** GAME INITIALISATION
@@ -54,27 +55,40 @@ function initializeKii () {
 function init () {
   players = []
   planets = []
-  // TODO REMOVE - slowly add anonymous planets// create home planet
-  //var planet = createEmptyPlanet()
-  //planets.push(planet)
-  //setPlanetInfo(null, planet, planet.planetID, planet.info)
-  // end todo remove
+  currentPlanetIdx = 0
+  
   queryAllPlanets()
 
   // Start listening for events
   setEventHandlers()
-  setInterval(updateMap, 3000)
+  setInterval(updateMap, 10000)
+  setInterval(checkForDirtyPlanets, 500)
 }
 
-var SPAWN_PROB = 0.1
-var GRIND_PROB = 1
-var PACK_PROB = 0.3
-var COOK_PROB = 0.5
-var DIE_PROB = 0.01
-var MAX_PER_EMITTER = 10
 // Process the map
 function updateMap () {
+  for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
+    var planetSlots = planets[planetIdx].info.slots
+    for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
+      planetSlots[slotIdx].age++
+    }
+    planets[planetIdx].dirty = true
+  }
+}
 
+var currentPlanetIdx = 0
+function checkForDirtyPlanets() {
+  if (currentPlanetIdx <= planets.length) {
+    var p = planets[currentPlanetIdx]
+    if (p.dirty) {
+      setPlanetInfo(p.kiiObj, p, p.planetID, p.info)
+      p.dirty = false
+    }
+  }
+  currentPlanetIdx++
+  if (currentPlanetIdx >= planets.length) {
+    currentPlanetIdx = 0
+  }
 }
 
 /* ************************************************

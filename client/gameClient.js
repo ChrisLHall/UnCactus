@@ -372,9 +372,9 @@ function playerByID (playerID) {
   return null
 }
 
-function planetById (planetID) {
+function planetByID (planetID) {
   for (var i = 0; i < glob.planets.length; i++) {
-    if (glob.planet[i].planetID === planetID) {
+    if (glob.planets[i].planetID === planetID) {
       return glob.planets[i]
     }
   }

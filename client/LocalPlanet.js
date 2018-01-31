@@ -12,9 +12,8 @@ var LocalPlanet = function (planetID, group, info) {
   this.setInfo(info)
 
   this.inhabitants = []
-  // TODO TESTING cacti
   for (var i = 0; i < 6; i++) {
-    var cactus = new LocalCactus(this, i, group, {type:"empty"})
+    var cactus = new LocalCactus(this, i, group, info.slots[i])
     this.inhabitants.push(cactus)
   }
 }
@@ -39,6 +38,12 @@ LocalPlanet.prototype.setInfo = function (info) {
     this.gameObj.scale = new Phaser.Point(info.size, info.size)
     this.gameObj.x = info.x
     this.gameObj.y = info.y
+
+    if (this.inhabitants) {
+      for (var i = 0; i < 6; i++) {
+        this.inhabitants[i].setInfo(this.info.slots[i])
+      }
+    }
   }
 }
 
