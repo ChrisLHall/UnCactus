@@ -35,15 +35,15 @@ http.listen(port, function (err) {
 
 
 function initializeKii () {
-  kii.Kii.initializeWithSite("l1rxzy4xclvo", "f662ebb1125548bc84626f5264eb11b4", kii.KiiSite.US);
   if ("" === KiiServerCreds.username || "" === KiiServerCreds.password) {
     console.log("Remember to populate server credentials in KiiServerCreds.js. Exiting...")
     process.exit(1)
     return //?
   }
+  kii.Kii.initializeWithSite("l1rxzy4xclvo", "f662ebb1125548bc84626f5264eb11b4", kii.KiiSite.US);
   kii.KiiUser.authenticate(KiiServerCreds.username, KiiServerCreds.password).then(function (user) {
     console.log("Kii Admin User authenticated.")
-    init() // Start everything here
+    fetchMetadata() // Start everything here
   }).catch(function (error) {
     var errorString = error.message;
     console.log("FAILED Kii Admin authentication: " + errorString);
@@ -52,21 +52,69 @@ function initializeKii () {
   });
 }
 
+function fetchMetadata () {
+  metadata = null
+  metadataKiiObj = null
+
+  var queryObject = kii.KiiQuery.queryWithClause(null);
+
+  var bucket = kii.Kii.bucketWithName("Metadata");
+  bucket.executeQuery(queryObject).then(function (params) {
+    var queryPerformed = params[0];
+    var result = params[1];
+    var nextQuery = params[2]; // if there are more results
+    if (result.length > 0) {
+      if (result.length > 1) {
+        console.log("Multiple server metadata objects")
+      }
+      metadataKiiObj = result[0]
+      metadata = metadataKiiObj._customInfo
+      // Start the game here!
+      init()
+    } else {
+      console.log("Failed to find metadata, exiting")
+      process.exit(1)
+      return
+    }
+  }).catch(function (error) {
+    var errorString = "" + error.code + ":" + error.message;
+    console.log("Failed to find metadata, exiting. Error: " + errorString)
+    process.exit(1)
+    return
+  });
+}
+
+function writeMetadata () {
+  metadataKiiObj._customInfo = metadata
+  metadataKiiObj.save().catch(function (error) {
+    var errorString = "" + error.code + ": " + error.message
+    console.log("ERROR: Unable to save metadata. Info: " + errorString);
+  });
+}
+
 function init () {
   players = []
   planets = []
   currentPlanetIdx = 0
-  
+
   queryAllPlanets()
 
   // Start listening for events
   setEventHandlers()
-  setInterval(updateMap, 10000)
+  setInterval(tick, 10000)
   setInterval(checkForDirtyPlanets, 500)
 }
 
+function tick() {
+  metadata["serverticks"]++;
+  // TODO: send serverticks to players with a socket message
+  writeMetadata()
+  
+  growPlants()
+}
+
 // Process the map
-function updateMap () {
+function growPlants () {
   for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
     var planetSlots = planets[planetIdx].info.slots
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
