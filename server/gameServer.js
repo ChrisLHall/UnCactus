@@ -12,6 +12,11 @@ var Cactus = require('../Common/Cactus')
 var CommonUtil = require('../Common/CommonUtil')
 var kii = require('kii-cloud-sdk').create()
 var KiiServerCreds = require('./KiiServerCreds')()
+const readline = require('readline')
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
 var port = process.env.PORT || 4545
 
@@ -32,7 +37,14 @@ http.listen(port, function (err) {
   initializeKii()
 })
 
-
+rl.on('line', (input) => {
+  console.log("Command input: " + input);
+  if (input === "quit") {
+    process.exit(0)
+  } else if (input === "kill all plants") {
+    DEBUGKillAllPlants()
+  }
+});
 
 function initializeKii () {
   if ("" === KiiServerCreds.username || "" === KiiServerCreds.password) {
@@ -85,7 +97,11 @@ function fetchMetadata () {
 }
 
 function writeMetadata () {
-  metadataKiiObj._customInfo = metadata
+  for (var key in metadata) {
+    if (metadata.hasOwnProperty(key)) {
+        metadataKiiObj.set(key, metadata[key])
+    }
+  }
   metadataKiiObj.save().catch(function (error) {
     var errorString = "" + error.code + ": " + error.message
     console.log("ERROR: Unable to save metadata. Info: " + errorString);
@@ -95,21 +111,19 @@ function writeMetadata () {
 function init () {
   players = []
   planets = []
-  currentPlanetIdx = 0
 
   queryAllPlanets()
 
   // Start listening for events
   setEventHandlers()
   setInterval(tick, 10000)
-  setInterval(checkForDirtyPlanets, 500)
 }
 
 function tick() {
-  metadata["serverticks"]++;
-  // TODO: send serverticks to players with a socket message
+  metadata["serverticks"] += 1;
+  io.emit('server tick', {serverTicks: metadata["serverticks"]})
   writeMetadata()
-  
+
   growPlants()
 }
 
@@ -118,24 +132,20 @@ function growPlants () {
   for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
     var planetSlots = planets[planetIdx].info.slots
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
-      planetSlots[slotIdx].age++
+      //planetSlots[slotIdx].age++
     }
-    planets[planetIdx].dirty = true
   }
 }
 
-var currentPlanetIdx = 0
-function checkForDirtyPlanets() {
-  if (currentPlanetIdx <= planets.length) {
-    var p = planets[currentPlanetIdx]
-    if (p.dirty) {
-      setPlanetInfo(p.kiiObj, p, p.planetID, p.info)
-      p.dirty = false
+// todo remove
+function DEBUGKillAllPlants () {
+  for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
+    var planet = planets[planetIdx]
+    var planetSlots = planet.info.slots
+    for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
+      planetSlots[slotIdx].birthTick = metadata["serverticks"]
     }
-  }
-  currentPlanetIdx++
-  if (currentPlanetIdx >= planets.length) {
-    currentPlanetIdx = 0
+    setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)
   }
 }
 

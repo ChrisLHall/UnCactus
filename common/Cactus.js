@@ -11,7 +11,7 @@
   Cactus.generateNewInfo = function(startType) {
     return {
       type: startType,
-      age: 0,
+      birthTick: 0,
     }
   }
 

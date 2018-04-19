@@ -20,9 +20,10 @@ LocalCactus.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Cactus.generateNewInfo("empty"))
   this.info = info
   if (null != info) {
+    var age = Math.max(0, glob.currentServerTick - info.birthTick)
     var frame = 0
     for (var ageIdx = 0; ageIdx < Cactus.GROWTH_AGES.length; ageIdx++) {
-      if (this.info.age >= Cactus.GROWTH_AGES[ageIdx]) {
+      if (age >= Cactus.GROWTH_AGES[ageIdx]) {
         frame = ageIdx
       }
     }

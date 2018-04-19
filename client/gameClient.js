@@ -25,6 +25,7 @@ var startX = 0
 var startY = 0
 
 var glob = {
+  currentServerTick: 0,
   intermittents: [],
   otherPlayers: [],
   planets: [],
@@ -102,12 +103,12 @@ function setEventHandlers () {
   socket.on('confirm id', onConfirmID)
   // New player message received
   socket.on('new player', onNewPlayer)
-
   // Player move message received
   socket.on('move player', onMovePlayer)
-
   // Player removed message received
   socket.on('remove player', onRemovePlayer)
+
+  socket.on('server tick', onServerTick)
 
   socket.on('update player info', onUpdatePlayerInfo)
   socket.on('update planet info', onUpdatePlanetInfo)
@@ -206,6 +207,10 @@ function onRemovePlayer (data) {
 
   // Remove player from array
   glob.otherPlayers.splice(glob.otherPlayers.indexOf(removePlayer), 1)
+}
+
+function onServerTick (data) {
+  glob.currentServerTick = data.serverTicks
 }
 
 function onUpdatePlayerInfo (data) {
