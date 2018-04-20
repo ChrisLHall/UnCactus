@@ -26,8 +26,8 @@ LocalPlayer.colors = [0xffffff, 0xaaffaa, 0xffccff]
 LocalPlayer.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Player.generateNewInfo(this.playerID))
   this.info = info
-  if (null != info) {
-    this.gameObj.tint = LocalPlayer.colors[info.color];
+  if (null != this.info) {
+    this.gameObj.tint = LocalPlayer.colors[this.info.color];
   }
 }
 
@@ -73,7 +73,7 @@ LocalPlayer.prototype.update = function () {
   this.gameObj.y += delta.y
 
   if (null != this.sittingOnPlanetObj) {
-    this.gameObj.angle += this.sittingOnPlanetObj.rotSpeed
+    this.gameObj.angle += this.sittingOnPlanetObj.info.rotSpeed
   }
 }
 

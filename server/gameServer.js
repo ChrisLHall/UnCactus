@@ -43,6 +43,8 @@ rl.on('line', (input) => {
     process.exit(0)
   } else if (input === "kill all plants") {
     DEBUGKillAllPlants()
+  } else if (input === "replant") {
+    DEBUGReplant()
   }
 });
 
@@ -130,9 +132,24 @@ function tick() {
 // Process the map
 function growPlants () {
   for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
-    var planetSlots = planets[planetIdx].info.slots
+    var planet = planets[planetIdx]
+    var planetSlots = planet.info.slots
+    var changed = false
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
-      //planetSlots[slotIdx].age++
+      var slot = planetSlots[slotIdx]
+      var age = metadata["serverticks"] - slot.birthTick
+      if (slot.type === "empty" && age > 20 && Math.random() < .05) {
+        slot.type = "cactus1"
+        slot.birthTick = metadata["serverticks"]
+        changed = true
+      } else if (slot.type.startsWith("cactus") && age > 50 && Math.random() < .05) {
+        slot.type = "empty"
+        slot.birthTick = metadata["serverticks"]
+        changed = true
+      }
+    }
+    if (changed) {
+      setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)
     }
   }
 }
@@ -143,6 +160,18 @@ function DEBUGKillAllPlants () {
     var planet = planets[planetIdx]
     var planetSlots = planet.info.slots
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
+      planetSlots[slotIdx].type = "empty"
+      planetSlots[slotIdx].birthTick = metadata["serverticks"]
+    }
+    setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)
+  }
+}
+function DEBUGReplant () {
+  for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
+    var planet = planets[planetIdx]
+    var planetSlots = planet.info.slots
+    for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
+      planetSlots[slotIdx].type = "cactus1"
       planetSlots[slotIdx].birthTick = metadata["serverticks"]
     }
     setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)

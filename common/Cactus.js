@@ -15,7 +15,7 @@
     }
   }
 
-  Cactus.GROWTH_AGES = [0, 3, 10]
+  Cactus.GROWTH_AGES = [0, 1, 4, 12]
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Cactus

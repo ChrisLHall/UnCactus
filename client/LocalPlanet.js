@@ -23,8 +23,8 @@ LocalPlanet.colors = [0xbbbbbb, 0xddffdd, 0xbbeeff]
 LocalPlanet.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Planet.generateNewInfo(this.planetID, 0, 0, ""))
   this.info = info
-  if (null != info) {
-    var ownerID = info.owner
+  if (null != this.info) {
+    var ownerID = this.info.owner
     var colIdx = 0
     if (null == ownerID || "" === ownerID) {
       colIdx = 0
@@ -35,9 +35,9 @@ LocalPlanet.prototype.setInfo = function (info) {
     }
     this.gameObj.tint = LocalPlanet.colors[colIdx]
 
-    this.gameObj.scale = new Phaser.Point(info.size, info.size)
-    this.gameObj.x = info.x
-    this.gameObj.y = info.y
+    this.gameObj.scale = new Phaser.Point(this.info.size, this.info.size)
+    this.gameObj.x = this.info.x
+    this.gameObj.y = this.info.y
 
     if (this.inhabitants) {
       for (var i = 0; i < 6; i++) {
