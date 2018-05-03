@@ -18,7 +18,7 @@ var LocalCactus = function (hostPlanetObj, placeIdx, group, info) {
 }
 
 LocalCactus.prototype.setInfo = function (info) {
-  CommonUtil.validate(info, Cactus.generateNewInfo("empty"))
+  CommonUtil.validate(info, Cactus.generateNewInfo("empty", 0))
   this.info = info
   if (null != this.info) {
     var newType = this.info.type
@@ -57,4 +57,4 @@ LocalCactus.prototype.updateAnim = function () {
   }
 }
 
-window.LocalPlanet = LocalPlanet
+window.LocalCactus = LocalCactus
