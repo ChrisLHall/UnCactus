@@ -6,10 +6,13 @@ var http = require('http').Server(app)
 var io = require('socket.io')(http, {origins:'localhost:* 192.168.*.*:* http://chrislhall.net:* http://www.chrislhall.net:* http://chrislhall.net/bees http://www.chrislhall.net/bees'})
 var uuidv4 = require('uuid/v4')
 
-var Player = require('../Common/Player')
-var Planet = require('../Common/Planet')
-var Cactus = require('../Common/Cactus')
-var CommonUtil = require('../Common/CommonUtil')
+var Player = require('../common/Player')
+var Cactus = require('../common/Cactus')
+var Planet = require('../common/Planet')
+Planet.generateCactusInfo = Cactus.generateNewInfo
+
+console.log("Cactus: " + Cactus.generateNewInfo)
+var CommonUtil = require('../common/CommonUtil')
 var kii = require('kii-cloud-sdk').create()
 var KiiServerCreds = require('./KiiServerCreds')()
 const readline = require('readline')

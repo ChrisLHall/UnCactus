@@ -8,6 +8,7 @@ function preload () {
   game.load.image('spaceFG', 'assets/images/dustfield.png')
   game.load.image('shout', 'assets/images/shout.png')
   game.load.image('pressshout', 'assets/images/pressShout.png')
+  game.load.image('gohome', 'assets/images/gohome.png')
 
   game.load.spritesheet('empty', 'assets/images/empty_sheet.png', 180, 180)
   game.load.spritesheet('cactus1', 'assets/images/cactus1_sheet.png', 180, 180)
@@ -76,10 +77,15 @@ function create () {
   uiGroup = game.add.group();
   uiGroup.fixedToCamera = true
 
-  uiText = uiGroup.create(250, 150, "pressshout")
+  uiText = uiGroup.create(220, 150, "pressshout")
   uiText.anchor.setTo(0.5, 0.5)
   uiText.inputEnabled = true;
   uiText.events.onInputDown.add(clickShout, uiText);
+
+  uiText = uiGroup.create(280, 150, "gohome")
+  uiText.anchor.setTo(0.5, 0.5)
+  uiText.inputEnabled = true;
+  uiText.events.onInputDown.add(clickGoHome, uiText);
 }
 
 function clickShout () {
@@ -92,6 +98,16 @@ function clickShout () {
 function onShout (data) {
   var shout = new Shout(data.playerID)
   glob.shouts.push(shout)
+}
+
+function clickGoHome () {
+  clickUsedByUI = true
+  if (null != player) {
+    var goto = findHomePlanet(player.playerID)
+    if (null !== goto) {
+      player.teleportToPlanet(goto)
+    }
+  }
 }
 
 function setEventHandlers () {
@@ -382,6 +398,16 @@ function playerByID (playerID) {
 function planetByID (planetID) {
   for (var i = 0; i < glob.planets.length; i++) {
     if (glob.planets[i].planetID === planetID) {
+      return glob.planets[i]
+    }
+  }
+  return null
+}
+
+function findHomePlanet (playerID) {
+  for (var i = 0; i < glob.planets.length; i++) {
+    console.log(glob.planets[i].info)
+    if (glob.planets[i].info.owner === playerID) {
       return glob.planets[i]
     }
   }

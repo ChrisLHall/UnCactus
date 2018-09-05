@@ -40,6 +40,13 @@ LocalPlayer.prototype.targetPlanet = function (planet) {
   }
 }
 
+LocalPlayer.prototype.teleportToPlanet = function (planet) {
+  var pos = planet.gameObj.position
+  gameObj.position = pos
+  this.targetPos = pos
+  this.targetPlanetObj = planet
+}
+
 LocalPlayer.prototype.exists = function () {
   return this.gameObj.exists
 }
