@@ -18,12 +18,12 @@
     return {
       owner: initialOwnerID,
       slots: [
-        {type:"empty", birthTick:0},
-        {type:"empty", birthTick:0},
-        {type:"empty", birthTick:0},
-        {type:"empty", birthTick:0},
-        {type:"empty", birthTick:0},
-        {type:"empty", birthTick:0},
+        Cactus.generateNewInfo("empty", 0),
+        Cactus.generateNewInfo("empty", 0),
+        Cactus.generateNewInfo("empty", 0),
+        Cactus.generateNewInfo("empty", 0),
+        Cactus.generateNewInfo("empty", 0),
+        Cactus.generateNewInfo("empty", 0),
       ],
       size: .3 + Math.random() * .2,
       rotSpeed: (.05 + Math.random() * .10) * (Math.random() > .5 ? 1 : -1),

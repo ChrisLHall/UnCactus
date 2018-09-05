@@ -138,11 +138,13 @@ function growPlants () {
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
       var slot = planetSlots[slotIdx]
       var age = metadata["serverticks"] - slot.birthTick
-      if (slot.type === "empty" && age > 20 && Math.random() < .05) {
+      if (slot.type === "empty" && age > Cactus.EMPTY_SPAWN_TIME
+          && Math.random() < Cactus.SPAWN_CHANCE) {
         slot.type = "cactus1"
         slot.birthTick = metadata["serverticks"]
         changed = true
-      } else if (slot.type.startsWith("cactus") && age > 50 && Math.random() < .05) {
+      } else if (slot.type.startsWith("cactus") && age > Cactus.DIE_TIME
+          && Math.random() < Cactus.DIE_CHANCE) {
         slot.type = "empty"
         slot.birthTick = metadata["serverticks"]
         changed = true

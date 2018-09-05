@@ -12,6 +12,7 @@ function preload () {
   game.load.spritesheet('empty', 'assets/images/empty_sheet.png', 180, 180)
   game.load.spritesheet('cactus1', 'assets/images/cactus1_sheet.png', 180, 180)
 
+  game.load.spritesheet('beehives', 'assets/images/beehives.png', 96, 96)
   game.load.spritesheet('playerbee', 'assets/images/bigbee.png', 64, 64)
 }
 

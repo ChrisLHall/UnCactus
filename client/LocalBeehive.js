@@ -1,6 +1,6 @@
 /* global game */
 
-var LocalCactus = function (hostPlanetObj, placeIdx, group, info) {
+var LocalBeehive = function (hostPlanetObj, placeIdx, group, info) {
   this.hostPlanetObj = hostPlanetObj
   this.placeIdx = placeIdx
   this.type = "empty"
@@ -17,7 +17,7 @@ var LocalCactus = function (hostPlanetObj, placeIdx, group, info) {
   this.setInfo(info)
 }
 
-LocalCactus.prototype.setInfo = function (info) {
+LocalBeehive.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Cactus.generateNewInfo("empty", 0))
   this.info = info
   if (null != this.info) {
@@ -30,7 +30,7 @@ LocalCactus.prototype.setInfo = function (info) {
   }
 }
 
-LocalCactus.prototype.update = function () {
+LocalBeehive.prototype.update = function () {
   var degs = this.hostPlanetObj.gameObj.angle + this.placeIdx * 60
   this.gameObj.angle = degs + 90
   var rads = degs * CommonUtil.DEG_TO_RAD
@@ -41,7 +41,7 @@ LocalCactus.prototype.update = function () {
   this.updateAnim()
 }
 
-LocalCactus.prototype.updateAnim = function () {
+LocalBeehive.prototype.updateAnim = function () {
   if (null != this.info) {
     var age = Math.max(0, glob.currentServerTick - this.info.birthTick)
     var frame = 0
@@ -57,4 +57,4 @@ LocalCactus.prototype.updateAnim = function () {
   }
 }
 
-window.LocalCactus = LocalCactus
+window.LocalPlanet = LocalPlanet
