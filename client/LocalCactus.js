@@ -57,4 +57,4 @@ LocalCactus.prototype.updateAnim = function () {
   }
 }
 
-window.LocalPlanet = LocalPlanet
+window.LocalCactus = LocalCactus
