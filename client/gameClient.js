@@ -77,12 +77,12 @@ function create () {
   uiGroup = game.add.group();
   uiGroup.fixedToCamera = true
 
-  uiText = uiGroup.create(220, 150, "pressshout")
+  uiText = uiGroup.create(200, 150, "pressshout")
   uiText.anchor.setTo(0.5, 0.5)
   uiText.inputEnabled = true;
   uiText.events.onInputDown.add(clickShout, uiText);
 
-  uiText = uiGroup.create(280, 150, "gohome")
+  uiText = uiGroup.create(300, 150, "gohome")
   uiText.anchor.setTo(0.5, 0.5)
   uiText.inputEnabled = true;
   uiText.events.onInputDown.add(clickGoHome, uiText);

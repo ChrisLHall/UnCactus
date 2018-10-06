@@ -134,15 +134,22 @@ function tick() {
   io.emit('server tick', {serverTicks: metadata["serverTicks"]})
   writeMetadata()
 
-  growPlants()
+  processPlanets()
 }
 
 // Process the map
-function growPlants () {
+function processPlanets () {
   for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
     var planet = planets[planetIdx]
     var planetSlots = planet.info.slots
     var changed = false
+    // ensure there is a beehive on home planets
+    if (planet.info.owner !== '' && planetSlots[0].type !== "beehives") {
+      console.log("Adding a beehive to " + planet.planetID);
+      planetSlots[0].type = "beehives";
+      planetSlots[0].birthTick = metadata['serverTicks'];
+      changed = true;
+    }
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
       var slot = planetSlots[slotIdx]
       var age = metadata["serverTicks"] - slot.birthTick
