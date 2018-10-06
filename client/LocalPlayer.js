@@ -41,8 +41,8 @@ LocalPlayer.prototype.targetPlanet = function (planet) {
 }
 
 LocalPlayer.prototype.teleportToPlanet = function (planet) {
-  var pos = planet.gameObj.position
-  gameObj.position = pos
+  var pos = planet.gameObj.position.clone()
+  this.gameObj.position = pos
   this.targetPos = pos
   this.targetPlanetObj = planet
 }

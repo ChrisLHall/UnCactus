@@ -29,11 +29,21 @@
       rotSpeed: (.05 + Math.random() * .10) * (Math.random() > .5 ? 1 : -1),
       x: x,
       y: y,
-      planetid: planetID
+      planetID: planetID
     }
   }
 
-  Planet.generateCactusInfo = function () {} // assign this
+  Planet.planetListToInfoList = function (planetList) {
+    var result = []
+    for (var i = 0; i < planetList.length; i++) {
+      result.push(planetList[i].info)
+    }
+    return result
+  }
+
+  Planet.generateCactusInfo = function (type, birthTick) {
+    return { type: type, birthTick: birthTick };
+  }
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Planet

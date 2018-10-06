@@ -90,7 +90,7 @@
           type: "empty"
         }
       ],
-      playerid: playerID
+      playerID: playerID
     }
   }
 

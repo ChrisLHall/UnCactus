@@ -104,6 +104,8 @@ function clickGoHome () {
   clickUsedByUI = true
   if (null != player) {
     var goto = findHomePlanet(player.playerID)
+    console.log("Home planet:");
+    console.log(goto);
     if (null !== goto) {
       player.teleportToPlanet(goto)
     }
@@ -130,11 +132,10 @@ function setEventHandlers () {
 
   socket.on('update player info', onUpdatePlayerInfo)
   socket.on('update planet info', onUpdatePlanetInfo)
+  socket.on('update all planets', onUpdateAllPlanets)
 
   socket.on('shout', onShout)
   socket.on('chat message', onReceiveChat)
-  // server side only
-  //socket.on('change tile', onChangeTile)
 }
 
 // Socket connected
@@ -155,17 +156,20 @@ function onConfirmID (data) {
   console.log("confirmed my ID: " + data.playerID)
   window.localStorage.setItem("preferredID", data.playerID)
 
-  tryKiiLogin(data.playerID, function () {
-    player = new LocalPlayer(data.playerID, playerGroup, startX, startY, Player.generateNewInfo(data.playerID))
+  //tryKiiLogin(data.playerID, function () {
+  player = new LocalPlayer(data.playerID, playerGroup, startX, startY, Player.generateNewInfo(data.playerID))
 
-    game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT, 0.3, 0.3)
-    game.camera.focusOnXY(startX, startY)
+  game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT, 0.3, 0.3)
+  game.camera.focusOnXY(startX, startY)
 
-    queryPlayerInfo(player, player.playerID)
-    queryAllPlanets()
-  })
+  // TODO use the query function to receive stuff
+  socket.emit("query player info", player.playerID)
+  //queryPlayerInfo(player, player.playerID)
+  socket.emit("query all planets", {});
+  //queryAllPlanets()
+  //})
 }
-
+/*
 function tryKiiLogin (playerID, successCallback) {
   var username = playerID;
   var password = "password9001";
@@ -185,6 +189,7 @@ function tryKiiLogin (playerID, successCallback) {
     });
   });
 }
+*/
 
 // New player
 function onNewPlayer (data) {
@@ -232,6 +237,19 @@ function onServerTick (data) {
 }
 
 function onUpdatePlayerInfo (data) {
+  // TODO REMOVE
+  console.log("update player " + data.playerID)
+  console.log(data)
+  if (null != player && data.playerID === player.playerID) {
+    player.setInfo(data)
+  } else {
+    var otherPlayer = playerByID(data.playerID)
+    if (null != otherPlayer) {
+      otherPlayer.setInfo(data)
+    }
+  }
+  // old way
+  /*
   if (null != player && data.playerID === player.playerID) {
     queryPlayerInfo(player, data.playerID)
   } else {
@@ -240,10 +258,24 @@ function onUpdatePlayerInfo (data) {
       queryPlayerInfo(otherPlayer, data.playerID)
     }
   }
+  */
 }
 
 function onUpdatePlanetInfo (data) {
+  // TODO REMOVE
+  console.log("update planet " + data.planetID)
+  console.log(data)
   var planet = planetByID(data.planetID)
+  if (null == planet) {
+    console.log("creating planet: " + data.planetID)
+    var planet = new LocalPlanet(data.planetID, planetGroup, data) // create offscreen
+    glob.planets.push(planet)
+  } else {
+    planet.setInfo(data)
+  }
+
+  // old way sorta
+  /*
   if (null == planet) {
     console.log("Creating new planet to query: " + data.planetID)
     var fakeInfo = Planet.generateNewInfo(data.planetID, -4000, -4000, "")
@@ -251,13 +283,23 @@ function onUpdatePlanetInfo (data) {
     glob.planets.push(planet)
   }
   queryPlanetInfo(planet, data.planetID)
+  */
 }
 
-function queryPlayerInfo (playerObj, playerID) {
+function onUpdateAllPlanets (data) {
+  // TODO REMOVE
+  console.log("update all planets " + data.planetID);
+  console.log(data);
+  for (var i = 0; i < data.length; i++) {
+    onUpdatePlanetInfo(data[i]);
+  }
+}
+/*
+function queryPlayerInfoOld (playerObj, playerID) {
   if (null == playerObj) {
     return
   }
-  var queryObject = KiiQuery.queryWithClause(KiiClause.equals("playerid", playerID));
+  var queryObject = KiiQuery.queryWithClause(KiiClause.equals("playerID", playerID));
   queryObject.sortByDesc("_created");
 
   var bucket = Kii.bucketWithName("PlayerInfo");
@@ -279,7 +321,9 @@ function queryPlayerInfo (playerObj, playerID) {
     console.log(playerID + ": PlayerInfo query failed, unable to execute query: " + errorString);
   });
 }
+*/
 
+/*
 function queryPlanetInfo(planetObj, planetID) {
   if (null == planetObj) {
     return
@@ -306,7 +350,9 @@ function queryPlanetInfo(planetObj, planetID) {
     console.log(planetID + ": Planet query failed, unable to execute query: " + errorString);
   });
 }
+*/
 
+/*
 function queryAllPlanets() {
   for (var i = 0; i < glob.planets.length; i++) {
     glob.planets[i].gameObj.destroy()
@@ -331,21 +377,8 @@ function queryAllPlanets() {
     console.log("All Planets query failed, unable to execute query: " + errorString);
   });
 }
+*/
 
-
-function getTileOrItem (tilesOrItems, x, y) {
-  return tilesOrItems[x.toString() + ',' + y.toString]
-}
-
-function setTileOrItem (tilesOrItems, x, y, id) {
-  tilesOrItems[x.toString() + ',' + y.toString] = id
-}
-
-var MAXCOUNT = 20
-var countdown = MAXCOUNT
-var MAXKEYCOUNT = 8
-var keyCountdown = MAXKEYCOUNT
-var ZERO_POINT = new Phaser.Point(0, 0)
 function update () {
   if (null != player) {
     player.update()
@@ -406,7 +439,7 @@ function planetByID (planetID) {
 
 function findHomePlanet (playerID) {
   for (var i = 0; i < glob.planets.length; i++) {
-    console.log(glob.planets[i].info)
+    console.log(glob.planets[i])
     if (glob.planets[i].info.owner === playerID) {
       return glob.planets[i]
     }

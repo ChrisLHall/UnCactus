@@ -15,16 +15,16 @@ console.log("Cactus: " + Cactus.generateNewInfo)
 var CommonUtil = require('../common/CommonUtil')
 var kii = require('kii-cloud-sdk').create()
 var KiiServerCreds = require('./KiiServerCreds')()
-const readline = require('readline')
-const rl = readline.createInterface({
+var readline = require('readline')
+var rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
 var port = process.env.PORT || 4545
 
-var players	// Array of connected players
-var planets // Array of planets
+var players = []	// Array of connected players
+var planets = []// Array of planets
 var currentPlanetIdx = 0 // checking for modified planets
 
 /* ************************************************
@@ -40,14 +40,16 @@ http.listen(port, function (err) {
   initializeKii()
 })
 
-rl.on('line', (input) => {
+rl.on('line', function (input) {
   console.log("Command input: " + input);
   if (input === "quit") {
-    process.exit(0)
+    process.exit(0);
   } else if (input === "kill all plants") {
-    DEBUGKillAllPlants()
+    DEBUGKillAllPlants();
   } else if (input === "replant") {
-    DEBUGReplant()
+    DEBUGReplant();
+  } else if (input === "generate") {
+    DEBUGGeneratePlanets();
   }
 });
 
@@ -125,8 +127,11 @@ function init () {
 }
 
 function tick() {
-  metadata["serverticks"] += 1;
-  io.emit('server tick', {serverTicks: metadata["serverticks"]})
+  if (!metadata.hasOwnProperty("serverTicks")) {
+    metadata['serverTicks'] = 0;
+  }
+  metadata["serverTicks"] += 1;
+  io.emit('server tick', {serverTicks: metadata["serverTicks"]})
   writeMetadata()
 
   growPlants()
@@ -140,16 +145,16 @@ function growPlants () {
     var changed = false
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
       var slot = planetSlots[slotIdx]
-      var age = metadata["serverticks"] - slot.birthTick
+      var age = metadata["serverTicks"] - slot.birthTick
       if (slot.type === "empty" && age > Cactus.EMPTY_SPAWN_TIME
           && Math.random() < Cactus.SPAWN_CHANCE) {
         slot.type = "cactus1"
-        slot.birthTick = metadata["serverticks"]
+        slot.birthTick = metadata["serverTicks"]
         changed = true
       } else if (slot.type.startsWith("cactus") && age > Cactus.DIE_TIME
           && Math.random() < Cactus.DIE_CHANCE) {
         slot.type = "empty"
-        slot.birthTick = metadata["serverticks"]
+        slot.birthTick = metadata["serverTicks"]
         changed = true
       }
     }
@@ -166,7 +171,7 @@ function DEBUGKillAllPlants () {
     var planetSlots = planet.info.slots
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
       planetSlots[slotIdx].type = "empty"
-      planetSlots[slotIdx].birthTick = metadata["serverticks"]
+      planetSlots[slotIdx].birthTick = metadata["serverTicks"]
     }
     setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)
   }
@@ -177,9 +182,16 @@ function DEBUGReplant () {
     var planetSlots = planet.info.slots
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
       planetSlots[slotIdx].type = "cactus1"
-      planetSlots[slotIdx].birthTick = metadata["serverticks"]
+      planetSlots[slotIdx].birthTick = metadata["serverTicks"]
     }
     setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)
+  }
+}
+function DEBUGGeneratePlanets () {
+  for (var i = 0; i < 10; i++) {
+    var emptyPlanet = createEmptyPlanet();
+    planets.push(emptyPlanet)
+    setPlanetInfo(null, emptyPlanet, emptyPlanet.planetID, emptyPlanet.info)
   }
 }
 
@@ -207,6 +219,10 @@ function onSocketConnection (client) {
   client.on('shout', onShout)
   // TEMP chat
   client.on('chat message', onReceiveChat)
+
+  client.on('query player info', onQueryPlayerInfo)
+  client.on('query planet info', onQueryPlanetInfo)
+  client.on('query all planets', onQueryAllPlanets)
 }
 
 // Socket client has disconnected
@@ -291,13 +307,16 @@ function onReceiveChat (msg) {
   io.emit("chat message", text)
 }
 
-function inStartTiles (x, y) {
-  loc = x.toString() + ',' + y.toString()
-  if (startTiles[loc]) {
-    return true
-  } else {
-    return false
-  }
+function onQueryPlayerInfo (playerID) {
+  this.emit('update player info', playerByID(playerID).info)
+}
+function onQueryPlanetInfo (planetID) {
+  this.emit('update planet info', planetByID(planetID).info)
+}
+function onQueryAllPlanets (_) {
+  var planetList = Planet.planetListToInfoList(planets);
+  console.log("someone queried all planets")
+  this.emit('update all planets', planetList);
 }
 
 function createHomePlanet(playerID) {
@@ -315,7 +334,7 @@ function createEmptyPlanet() {
 }
 
 function getOrInitPlayerInfo(player, playerID) {
-  var queryObject = kii.KiiQuery.queryWithClause(kii.KiiClause.equals("playerid", playerID));
+  var queryObject = kii.KiiQuery.queryWithClause(kii.KiiClause.equals("playerID", playerID));
   queryObject.sortByDesc("_created");
 
   var bucket = kii.Kii.bucketWithName("PlayerInfo");
@@ -362,7 +381,7 @@ function setPlayerInfo(existingKiiObj, player, playerID, playerInfo) {
     player.kiiObj = obj
     player.info = obj._customInfo
     console.log(playerID + ": player info save succeeded");
-    player.socket.emit('update player info', {playerID: playerID})
+    player.socket.emit('update player info', player.info)
   }).catch(function (error) {
     var errorString = "" + error.code + ": " + error.message
     console.log(playerID + ": Unable to create player info: " + errorString);
@@ -383,9 +402,9 @@ function queryAllPlanets() {
     for (var i = 0; i < result.length; i++) {
       var planetResult = result[i]
       var planetInfo = planetResult._customInfo
-      var planet = new Planet(planetInfo.planetid)
+      var planet = new Planet(planetInfo.planetID)
       planet.kiiObj = planetResult
-      CommonUtil.validate(planetInfo, Planet.generateNewInfo(planetInfo.planetid, 0, 0, ""))
+      CommonUtil.validate(planetInfo, Planet.generateNewInfo(planetInfo.planetID, 0, 0, ""))
       planet.info = planetInfo
       planets.push(planet)
     }
@@ -396,7 +415,7 @@ function queryAllPlanets() {
 }
 
 function getPlanetInfo(planet, planetID) {
-  var queryObject = kii.KiiQuery.queryWithClause(kii.KiiClause.equals("planetid", planetID));
+  var queryObject = kii.KiiQuery.queryWithClause(kii.KiiClause.equals("planetID", planetID));
   queryObject.sortByDesc("_created");
 
   var bucket = kii.Kii.bucketWithName("Planets");
@@ -438,7 +457,7 @@ function setPlanetInfo(existingKiiObj, planet, planetID, planetInfo) {
     planet.kiiObj = obj
     planet.info = obj._customInfo
     console.log(planetID + ": planet info save succeeded");
-    io.emit('update planet info', {planetID: planetID})
+    io.emit('update planet info', planet.info)
   }).catch(function (error) {
     var errorString = "" + error.code + ": " + error.message
     console.log(playerID + ": Unable to create planet info: " + errorString);
@@ -464,6 +483,16 @@ function playerBySocket (socket) {
   for (i = 0; i < players.length; i++) {
     if (players[i].socket === socket) {
       return players[i]
+    }
+  }
+  return null
+}
+
+function planetByID (planetID) {
+  var i
+  for (i = 0; i < planets.length; i++) {
+    if (planets[i].planetID === planetID) {
+      return planets[i]
     }
   }
   return null
