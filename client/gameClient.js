@@ -14,7 +14,9 @@ function preload () {
   game.load.spritesheet('cactus1', 'assets/images/cactus1_sheet.png', 180, 180)
 
   game.load.spritesheet('beehives', 'assets/images/beehives.png', 96, 96)
-  game.load.spritesheet('playerbee', 'assets/images/bigbee.png', 64, 64)
+  game.load.spritesheet('playerbee', 'assets/images/bigbee.png', 64, 64);
+  game.load.spritesheet('items', 'assets/images/items.png', 64, 64);
+  game.load.spritesheet('itemsUI', 'assets/images/itemsUI.png', 64, 64);
 }
 
 var socket // Socket connection
@@ -44,6 +46,7 @@ var UI_BACK_POS = {x: (-448 + 0), y: (-252 + 0)}
 var UI_ICON_POS = {x: (-448 + 15), y: (-252 + 36)}
 var UI_TEXT_POS = {x: (-448 + 60), y: (-252 + 30)}
 var clickUsedByUI = false
+var itemSlots = []
 
 var planetGroup
 var playerGroup
@@ -77,15 +80,17 @@ function create () {
   uiGroup = game.add.group();
   uiGroup.fixedToCamera = true
 
-  uiText = uiGroup.create(200, 150, "pressshout")
-  uiText.anchor.setTo(0.5, 0.5)
-  uiText.inputEnabled = true;
-  uiText.events.onInputDown.add(clickShout, uiText);
+  uiText = new UIButton(uiGroup, "pressshout", 0, 200, 150, clickShout);
+  
+  // uiGroup.create(200, 150, "pressshout")
+  // uiText.anchor.setTo(0.5, 0.5)
+  // uiText.inputEnabled = true;
 
-  uiText = uiGroup.create(300, 150, "gohome")
-  uiText.anchor.setTo(0.5, 0.5)
-  uiText.inputEnabled = true;
-  uiText.events.onInputDown.add(clickGoHome, uiText);
+  uiText = new UIButton(uiGroup, "gohome", 0, 300, 150, clickGoHome);
+  //uiGroup.create(300, 150, "gohome")
+  //uiText.anchor.setTo(0.5, 0.5)
+  //uiText.inputEnabled = true;
+  //uiText.events.onInputDown.add(clickGoHome, uiText);
 }
 
 function clickShout () {
