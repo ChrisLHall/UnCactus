@@ -57,7 +57,6 @@ function create () {
   // TODO remove for release????
   game.stage.disableVisibilityChange = true;
   socket = io.connect()
-  Kii.initializeWithSite("l1rxzy4xclvo", "f662ebb1125548bc84626f5264eb11b4", KiiSite.US)
   // Start listening for events
   setEventHandlers()
 

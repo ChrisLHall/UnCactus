@@ -12,6 +12,9 @@ var UIButton = function (group, animName, frame, screenX, screenY, touchAction) 
 }
 
 UIButton.prototype.onClick = function(pointer) {
+  if (clickUsedByUI) {
+    return;
+  }
   clickUsedByUI = true // ALWAYS DO THIS FIRST
   this.touchAction.call(this, pointer)
 }

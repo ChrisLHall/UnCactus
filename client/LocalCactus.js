@@ -27,6 +27,13 @@ LocalCactus.prototype.setInfo = function (info) {
       this.gameObj.loadTexture(this.type, 0);
     }
     this.updateAnim()
+
+    var scaleFactor = 2;
+    if (this.type === "beehives") {
+      scaleFactor = 3;
+    }
+    this.gameObj.scale = new Phaser.Point(this.hostPlanetObj.info.size * scaleFactor,
+      this.hostPlanetObj.info.size * scaleFactor);
   }
 }
 
