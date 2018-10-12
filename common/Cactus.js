@@ -16,10 +16,10 @@
   }
 
   Cactus.isCactus = function(type) {
-    return type.startsWith("cactus")
+    return type.startsWith("cactus");
   }
 
-  Cactus.GROWTH_AGES = [0, 1, 4, 12]
+  Cactus.GROWTH_AGES = [0, 4, 10, 18];
 
   Cactus.EMPTY_SPAWN_TIME = 20
   Cactus.SPAWN_CHANCE = .005

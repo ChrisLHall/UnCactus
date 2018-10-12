@@ -1,4 +1,7 @@
-var game = new Phaser.Game(513, 912, Phaser.AUTO, 'gameContainer',
+var WIDTH = 540
+var HEIGHT = 960
+
+var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'gameContainer',
     { preload: preload, create: create, update: update, render: render })
 
 function preload () {
@@ -10,10 +13,10 @@ function preload () {
   game.load.image('pressshout', 'assets/images/pressShout.png')
   game.load.image('gohome', 'assets/images/gohome.png')
 
-  game.load.spritesheet('empty', 'assets/images/empty_sheet.png', 180, 180)
-  game.load.spritesheet('cactus1', 'assets/images/cactus1_sheet.png', 180, 180)
+  game.load.spritesheet('empty', 'assets/images/empty_sheet.png', 190, 190);
+  game.load.spritesheet('cactus1', 'assets/images/cactus1_sheet.png', 190, 190);
 
-  game.load.spritesheet('beehives', 'assets/images/beehives.png', 96, 96)
+  game.load.spritesheet('beehives', 'assets/images/beehives.png', 96, 96);
   game.load.spritesheet('playerbee', 'assets/images/bigbee.png', 64, 64);
   game.load.spritesheet('items', 'assets/images/items.png', 64, 64);
   game.load.spritesheet('itemsUI', 'assets/images/itemsUI.png', 64, 64);
@@ -36,17 +39,11 @@ var glob = {
   planets: [],
   shouts: []
 }
-window.glob = glob
+window.glob = glob;
+var itemSlots = [];
 
-var selectedItemIndex = 0
-var itemCostStr = '...'
 var uiText
-var uiIcon
-var UI_BACK_POS = {x: (-448 + 0), y: (-252 + 0)}
-var UI_ICON_POS = {x: (-448 + 15), y: (-252 + 36)}
-var UI_TEXT_POS = {x: (-448 + 60), y: (-252 + 30)}
 var clickUsedByUI = false
-var itemSlots = []
 
 var planetGroup
 var playerGroup
@@ -64,9 +61,9 @@ function create () {
   game.world.setBounds(-2000, -2000, 4000, 4000)
 
   // Our tiled scrolling background
-  spaceBG = game.add.tileSprite(0, 0, 513, 912, 'spaceBG')
+  spaceBG = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'spaceBG')
   spaceBG.fixedToCamera = true
-  spaceFG = game.add.tileSprite(0, 0, 513, 912, 'spaceFG')
+  spaceFG = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'spaceFG')
   spaceFG.fixedToCamera = true
 
   tileGroup = game.add.group();
@@ -79,17 +76,21 @@ function create () {
   uiGroup = game.add.group();
   uiGroup.fixedToCamera = true
 
-  uiText = new UIButton(uiGroup, "pressshout", 0, 200, 150, clickShout);
+  uiText = new UIButton(uiGroup, "pressshout", 0, 220, 80, clickShout);
   
   // uiGroup.create(200, 150, "pressshout")
   // uiText.anchor.setTo(0.5, 0.5)
   // uiText.inputEnabled = true;
 
-  uiText = new UIButton(uiGroup, "gohome", 0, 300, 150, clickGoHome);
+  uiText = new UIButton(uiGroup, "gohome", 0, 320, 80, clickGoHome);
   //uiGroup.create(300, 150, "gohome")
   //uiText.anchor.setTo(0.5, 0.5)
   //uiText.inputEnabled = true;
   //uiText.events.onInputDown.add(clickGoHome, uiText);
+
+  for (var i = 0; i < 6; i++) {
+    itemSlots[i] = new ItemUIButton(uiGroup, i, WIDTH / 12 + (i * WIDTH / 6), HEIGHT - 80);
+  }
 }
 
 function clickShout () {
@@ -453,5 +454,5 @@ function findHomePlanet (playerID) {
 
 // TEMP CHAT SYSTEM
 function onReceiveChat(msg) {
-    $('#messages').prepend($('<li>').text(msg));
+    //$('#messages').prepend($('<li>').text(msg));
 }

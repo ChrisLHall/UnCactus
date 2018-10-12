@@ -12,8 +12,6 @@ var LocalCactus = function (hostPlanetObj, placeIdx, group, info) {
     this.gameObj.animations.add(i.toString(), [i], 1, true)
   }
   this.gameObj.animations.play("0")
-  this.gameObj.scale = new Phaser.Point(this.hostPlanetObj.info.size,
-      this.hostPlanetObj.info.size)
   this.setInfo(info)
 }
 

@@ -35,7 +35,7 @@ LocalPlanet.prototype.setInfo = function (info) {
     }
     this.gameObj.tint = LocalPlanet.colors[colIdx]
 
-    this.gameObj.scale = new Phaser.Point(this.info.size, this.info.size)
+    this.gameObj.scale = new Phaser.Point(this.info.size * 2, this.info.size * 2)
     this.gameObj.x = this.info.x
     this.gameObj.y = this.info.y
 
@@ -62,6 +62,6 @@ LocalPlanet.prototype.update = function () {
   }
 }
 
-LocalPlanet.ORIG_RADIUS = 115
+LocalPlanet.ORIG_RADIUS = 115 * 2
 
 window.LocalPlanet = LocalPlanet
