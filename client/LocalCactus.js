@@ -4,7 +4,8 @@ var LocalCactus = function (hostPlanetObj, placeIdx, group, info) {
   this.hostPlanetObj = hostPlanetObj
   this.placeIdx = placeIdx
   this.type = "empty"
-  this.currentFrame = "0"
+  this.currentFrame = 0;
+  this.itemButton = null;
 
   this.gameObj = group.create(-10000, -10000, 'empty')
   this.gameObj.anchor.setTo(0.5, 0.9)
@@ -43,7 +44,19 @@ LocalCactus.prototype.update = function () {
   this.gameObj.x = this.hostPlanetObj.gameObj.x + len * Math.cos(rads)
   this.gameObj.y = this.hostPlanetObj.gameObj.y + len * Math.sin(rads)
 
-  this.updateAnim()
+  // update buttons
+  if (this.frame === 2 && !this.itemButton) {
+    this.itemButton = new OnPlanetItemButton(this.hostPlanetObj, this.placeIdx, this.group, "pollen");
+  } else if (this.frame !== 2 && this.itemButton) {
+    this.itemButton.gameObj.destroy();
+    this.itemButton = null;
+  }
+
+  if (this.itemButton) {
+    this.itemButton.update();
+  }
+
+  this.updateAnim();
 }
 
 LocalCactus.prototype.updateAnim = function () {
@@ -55,9 +68,9 @@ LocalCactus.prototype.updateAnim = function () {
         frame = ageIdx
       }
     }
-    if (frame.toString() !== this.currentFrame) {
-      this.currentFrame = frame.toString()
-      this.gameObj.animations.play(this.currentFrame)
+    if (frame !== this.currentFrame) {
+      this.currentFrame = frame;
+      this.gameObj.animations.play(this.currentFrame.toString());
     }
   }
 }

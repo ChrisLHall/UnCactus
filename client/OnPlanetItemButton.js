@@ -5,23 +5,18 @@ var OnPlanetItemButton = function (hostPlanetObj, placeIdx, group, itemType) {
     this.placeIdx = placeIdx
     this.itemType = itemType
   
-    this.gameObj = group.create(-10000, -10000, 'itemsUI')
-    this.gameObj.anchor.setTo(0.5, 0.9)
+    this.buttonGameObj = group.create(-10000, -10000, 'itemsUI')
+    this.buttonGameObj.anchor.setTo(0.5, 0.9)
     for (var i = 0; i <= 3; i++) {
-      this.gameObj.animations.add(i.toString(), [i], 1, true)
+      this.buttonGameObj.animations.add(i.toString(), [i], 1, true)
     }
-    this.gameObj.animations.play("0")
-    this.gameObj.inputEnabled = true;
-    this.gameObj.events.onInputDown.add(this.onClick, this);
+    this.buttonGameObj.animations.play("0")
+    this.buttonGameObj.inputEnabled = true;
+    this.buttonGameObj.events.onInputDown.add(this.onClick, this);
     
-    this.itemGameObj = group.create(-10000, -10000, 'items')
-    this.itemGameObj.anchor.setTo(0.5, 0.9)
-    for (var i = 0; i <= 3; i++) {
-      this.itemGameObj.animations.add(i.toString(), [i], 1, true)
-    }
-    this.itemGameObj.animations.play("0")
-    //this.gameObj.scale = new Phaser.Point(this.hostPlanetObj.info.size,
-    //    this.hostPlanetObj.info.size)
+    this.gameObj = group.create(-10000, -10000, 'items')
+    this.gameObj.anchor.setTo(0.5, 0.9)
+    Item.setupAnims(this.gameObj);
   }
   
   OnPlanetItemButton.prototype.update = function () {
@@ -44,6 +39,7 @@ var OnPlanetItemButton = function (hostPlanetObj, placeIdx, group, itemType) {
     }
     clickUsedByUI = true;
     // TODO IMPLEMENT FUNCTIONALITY
+    console.log("clicked on planet button on " + this.hostPlanetObj.planetID);
   }
   
   window.OnPlanetItemButton = OnPlanetItemButton
