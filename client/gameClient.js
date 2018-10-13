@@ -87,7 +87,6 @@ function create () {
 }
 
 function clickShout () {
-  clickUsedByUI = true // ALWAYS DO THIS FIRST
   if (null != player) {
     socket.emit('shout', {playerID: player.playerID})
   }
@@ -99,11 +98,8 @@ function onShout (data) {
 }
 
 function clickGoHome () {
-  clickUsedByUI = true
   if (null != player) {
     var goto = findHomePlanet(player.playerID)
-    console.log("Home planet:");
-    console.log(goto);
     if (null !== goto) {
       player.teleportToPlanet(goto)
     }
@@ -223,12 +219,8 @@ function onUpdatePlayerInfo (data) {
 }
 
 function onUpdatePlanetInfo (data) {
-  // TODO REMOVE
-  console.log("update planet " + data.planetID)
-  console.log(data)
   var planet = planetByID(data.planetID)
   if (null == planet) {
-    console.log("creating planet: " + data.planetID)
     var planet = new LocalPlanet(data.planetID, planetGroup, data) // create offscreen
     glob.planets.push(planet)
   } else {
@@ -237,9 +229,6 @@ function onUpdatePlanetInfo (data) {
 }
 
 function onUpdateAllPlanets (data) {
-  // TODO REMOVE
-  console.log("update all planets " + data.planetID);
-  console.log(data);
   for (var i = 0; i < data.length; i++) {
     onUpdatePlanetInfo(data[i]);
   }

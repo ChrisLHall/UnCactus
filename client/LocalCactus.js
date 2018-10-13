@@ -3,6 +3,7 @@
 var LocalCactus = function (hostPlanetObj, placeIdx, group, info) {
   this.hostPlanetObj = hostPlanetObj
   this.placeIdx = placeIdx
+  this.group = group;
   this.type = "empty"
   this.currentFrame = 0;
   this.itemButton = null;
@@ -44,10 +45,10 @@ LocalCactus.prototype.update = function () {
   this.gameObj.x = this.hostPlanetObj.gameObj.x + len * Math.cos(rads)
   this.gameObj.y = this.hostPlanetObj.gameObj.y + len * Math.sin(rads)
 
-  // update buttons
-  if (this.frame === 2 && !this.itemButton) {
+  // update buttons TODO MAKE IT NOT ALWAYS HAPEN
+  if (this.frame === 2 || true && !this.itemButton) {
     this.itemButton = new OnPlanetItemButton(this.hostPlanetObj, this.placeIdx, this.group, "pollen");
-  } else if (this.frame !== 2 && this.itemButton) {
+  } else if (this.frame !== 2 && false && this.itemButton) {
     this.itemButton.gameObj.destroy();
     this.itemButton = null;
   }
