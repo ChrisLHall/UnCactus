@@ -12,6 +12,8 @@
     return {
       type: startType,
       birthTick: birthTick,
+      pollenAvailable: false,
+      pollinatedType: null, // type of pollen used to pollinate
     }
   }
 

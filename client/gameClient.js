@@ -40,7 +40,8 @@ var glob = {
   shouts: []
 }
 window.glob = glob;
-var itemSlots = [];
+var inventory = [];
+var itemUIButtons = [];
 
 var uiText
 var clickUsedByUI = false
@@ -89,7 +90,8 @@ function create () {
   //uiText.events.onInputDown.add(clickGoHome, uiText);
 
   for (var i = 0; i < 6; i++) {
-    itemSlots[i] = new ItemUIButton(uiGroup, i, WIDTH / 12 + (i * WIDTH / 6), HEIGHT - 80);
+    inventory.push(null);
+    itemUIButtons.push(new ItemUIButton(uiGroup, i, WIDTH / 12 + (i * WIDTH / 6), HEIGHT - 80));
   }
 }
 

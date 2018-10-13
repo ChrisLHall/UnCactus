@@ -11,10 +11,14 @@ var ItemUIButton = function (group, slot, screenX, screenY) {
 }
 
 ItemUIButton.prototype.updateGFX = function () {
-    // TODO update the icon based on whats in the slot
-  this.gameObj.animations.add("anim", [0], 10, true);
-  this.gameObj.animations.play("anim");
-  this.gameObj.visible = false;
+  Item.setupAnims(this.gameObj);
+  // TODO update the icon based on whats in the slot
+  if (inventory[this.slot]) {
+    this.gameObj.visible = true;
+    this.gameObj.animations.play("seed");
+  } else {
+    this.gameObj.visible = false;
+  }
 }
 
 ItemUIButton.prototype.onClick = function(pointer) {
