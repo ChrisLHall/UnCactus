@@ -7,15 +7,19 @@ var ItemUIButton = function (group, slot, screenX, screenY) {
   this.gameObj = group.create(screenX, screenY, "items")
   this.gameObj.obj = this;
   this.gameObj.anchor.setTo(0.5, 0.5);
+  Item.setupAnims(this.gameObj);
   this.updateGFX();
 }
 
 ItemUIButton.prototype.updateGFX = function () {
-  Item.setupAnims(this.gameObj);
-  // TODO update the icon based on whats in the slot
-  if (inventory[this.slot]) {
+  if (!player) {
+    return;
+  }
+  
+  var item = player.inventory[this.slot];
+  if (item) {
     this.gameObj.visible = true;
-    this.gameObj.animations.play("seed");
+    this.gameObj.animations.play(item);
   } else {
     this.gameObj.visible = false;
   }

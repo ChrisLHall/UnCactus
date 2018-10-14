@@ -40,8 +40,8 @@ var glob = {
   shouts: []
 }
 window.glob = glob;
-var inventory = [];
 var itemUIButtons = [];
+var NUM_ITEM_SLOTS = 6;
 
 var uiText
 var clickUsedByUI = false
@@ -80,9 +80,8 @@ function create () {
   uiText = new UIButton(uiGroup, "pressshout", 0, 220, 80, clickShout);
   uiText = new UIButton(uiGroup, "gohome", 0, 320, 80, clickGoHome);
 
-  for (var i = 0; i < 6; i++) {
-    inventory.push(null);
-    itemUIButtons.push(new ItemUIButton(uiGroup, i, WIDTH / 12 + (i * WIDTH / 6), HEIGHT - 80));
+  for (var i = 0; i < NUM_ITEM_SLOTS; i++) {
+    itemUIButtons.push(new ItemUIButton(uiGroup, i, WIDTH / (2 * NUM_ITEM_SLOTS) + (i * WIDTH / NUM_ITEM_SLOTS), HEIGHT - 80));
   }
 }
 
@@ -260,10 +259,14 @@ function update () {
   spaceFG.tilePosition.x = -game.camera.x
   spaceFG.tilePosition.y = -game.camera.y
 
-  updateUI()
+  updateUI();
 }
 
 function updateUI () {
+  for (var i = 0; i < NUM_ITEM_SLOTS; i++) {
+    itemUIButtons[i].updateGFX();
+  }
+
   if (!game.input.activePointer.isDown) {
     clickUsedByUI = false
   }

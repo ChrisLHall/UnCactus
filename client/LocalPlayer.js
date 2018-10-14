@@ -1,5 +1,6 @@
 var LocalPlayer = function (playerID, group, startX, startY, playerInfo) {
   this.playerID = playerID
+  this.inventory = [];
 
   this.gameObj = group.create(startX, startY, 'playerbee')
   this.gameObj.animations.add("fly", [0, 1], 10, true);
@@ -45,6 +46,17 @@ LocalPlayer.prototype.teleportToPlanet = function (planet) {
   this.gameObj.position = pos
   this.targetPos = pos
   this.targetPlanetObj = planet
+}
+
+LocalPlayer.prototype.tryAddItem = function (itemType) {
+  // TODO SYNC THIS TO THE SERVER
+  for (var i = 0; i < NUM_ITEM_SLOTS; i++) {
+    if (!this.inventory[i]) {
+      this.inventory[i] = itemType;
+      return true;
+    }
+  }
+  return false;
 }
 
 LocalPlayer.prototype.exists = function () {

@@ -7,6 +7,8 @@ var LocalCactus = function (hostPlanetObj, placeIdx, group, info) {
   this.type = "empty"
   this.currentFrame = 0;
   this.itemButton = null;
+  // TODO SYNC THIS ACROSS THE SERVER
+  this.madePollen = false;
 
   this.gameObj = group.create(-10000, -10000, 'empty')
   this.gameObj.anchor.setTo(0.5, 0.9)
@@ -45,11 +47,13 @@ LocalCactus.prototype.update = function () {
   this.gameObj.x = this.hostPlanetObj.gameObj.x + len * Math.cos(rads)
   this.gameObj.y = this.hostPlanetObj.gameObj.y + len * Math.sin(rads)
 
-  // update buttons TODO MAKE IT NOT ALWAYS HAPEN
-  if (this.frame === 2 || true && !this.itemButton) {
-    this.itemButton = new OnPlanetItemButton(this.hostPlanetObj, this.placeIdx, this.group, "pollen");
-  } else if (this.frame !== 2 && false && this.itemButton) {
-    this.itemButton.gameObj.destroy();
+  // update buttons
+  // TODO MOVE THIS LOGIC ONTO THE SERVER PROBABLY
+  if ((this.type === "cactus" && this.currentFrame === 2 && !this.madePollen) && !this.itemButton) {
+    this.itemButton = new OnPlanetItemButton(this, this.placeIdx, this.group, "pollen");
+    this.madePollen = true;
+  } else if ((this.type !== "cactus" || this.currentFrame !== 2) && this.itemButton) {
+    this.itemButton.destroy();
     this.itemButton = null;
   }
 
