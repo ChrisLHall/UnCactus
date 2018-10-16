@@ -42,11 +42,16 @@ OnPlanetItemButton.prototype.onClick = function () {
   clickUsedByUI = true;
   // TODO ROUTE THIS THROUGH THE SERVER
   console.log("clicked on planet button on " + this.hostPlanetObj.planetID);
-  if (player) {
+  /*if (player) {
     if (player.tryAddItem(this.itemType)) {
       this.destroy();
       this.hostObj.itemButton = null;
     }
+  }*/
+  // so we wanna send a message to the server
+  // with planet ID and slot number
+  if (player) {
+    socket.emit("collect item", { planetID: this.hostPlanetObj.planetID, slot: this.hostObj.slot })
   }
 }
 

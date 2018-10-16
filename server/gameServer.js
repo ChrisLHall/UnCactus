@@ -153,16 +153,22 @@ function processPlanets () {
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
       var slot = planetSlots[slotIdx]
       var age = metadata["serverTicks"] - slot.birthTick
-      if (slot.type === "empty" && age > Cactus.EMPTY_SPAWN_TIME
-          && Math.random() < Cactus.SPAWN_CHANCE) {
-        slot.type = "cactus1"
-        slot.birthTick = metadata["serverTicks"]
-        changed = true
-      } else if (slot.type.startsWith("cactus") && age > Cactus.DIE_TIME
-          && Math.random() < Cactus.DIE_CHANCE) {
-        slot.type = "empty"
-        slot.birthTick = metadata["serverTicks"]
-        changed = true
+      if (slot.type === "empty") {
+        if (age > Cactus.EMPTY_SPAWN_TIME && Math.random() < Cactus.SPAWN_CHANCE) {
+          slot.type = "cactus1";
+          slot.birthTick = metadata["serverTicks"];
+          changed = true;
+        }
+      } else if (slot.type.startsWith("cactus")) {
+        if (age > Cactus.DIE_TIME && Math.random() < Cactus.DIE_CHANCE) {
+          slot.type = "empty";
+          slot.birthTick = metadata["serverTicks"];
+          changed = true;
+        } else if (age === Cactus.GROWTH_AGES[2]) {
+          // flowering age
+          slot.itemAvailable = "pollen"; // TODO pollen types
+          changed = true;
+        }
       }
     }
     if (changed) {
@@ -221,7 +227,8 @@ function onSocketConnection (client) {
   client.on('new player', onNewPlayer)
 
   // Listen for move player message
-  client.on('move player', onMovePlayer)
+  client.on('move player', onMovePlayer);
+  client.on('collect item', onCollectItem);
 
   client.on('shout', onShout)
   // TEMP chat
@@ -299,8 +306,33 @@ function onMovePlayer (data) {
   movePlayer.setY(data.y)
   movePlayer.setAngle(data.angle)
 
-  // Broadcast updated position to connected socket clients
+  // Broadcast updated position to other connected socket clients
   this.broadcast.emit('move player', {playerID: movePlayer.playerID, x: movePlayer.getX(), y: movePlayer.getY(), angle: movePlayer.getAngle()})
+}
+
+function onCollectItem (data) {
+  var player = playerBySocket(this)
+  var planet = planetByID(data.planetID)
+  if (!planet || !player) {
+    console.log("Unable to collect item " + player.toString() + " " + planet.toString());
+  }
+
+  var slot = planet.info.slots[data.slot]
+  var changed = false;
+  if (slot.type.startsWith("cactus")) {
+    var invSlot = Player.firstEmptyInventorySlot(player.info);
+    if (slot.itemAvailable && invSlot !== -1) {
+      player.info.inventory[invSlot] = slot.itemAvailable;
+      slot.itemAvailable = null;
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    // TODO REFACTOR THIS FKN MESS ?
+    setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info);
+    setPlayerInfo(player.kiiObj, player, player.playerID, player.info);
+  }
 }
 
 function onShout (data) {

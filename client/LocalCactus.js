@@ -30,6 +30,8 @@ LocalCactus.prototype.setInfo = function (info) {
     }
     this.updateAnim()
 
+    // TODO CREATE THE UI BUTTON THING BASED ON THE SERVER
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     var scaleFactor = 2;
     if (this.type === "beehives") {
       scaleFactor = 3;

@@ -1,6 +1,5 @@
 var LocalPlayer = function (playerID, group, startX, startY, playerInfo) {
-  this.playerID = playerID
-  this.inventory = [];
+  this.playerID = playerID;
 
   this.gameObj = group.create(startX, startY, 'playerbee')
   this.gameObj.animations.add("fly", [0, 1], 10, true);
@@ -28,6 +27,9 @@ LocalPlayer.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Player.generateNewInfo(this.playerID))
   this.info = info
   if (null != this.info) {
+    for (var i = 0; i < itemUIButtons.length; i++) {
+      itemUIButtons[i].updateGFX();
+    }
     this.gameObj.tint = LocalPlayer.colors[this.info.color];
   }
 }

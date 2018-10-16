@@ -80,18 +80,24 @@
       },
       color: Math.floor(Math.random() * 3),
       inventory: [
-        {
-          type: "empty"
-        },
-        {
-          type: "empty"
-        },
-        {
-          type: "empty"
-        }
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
       ],
       playerID: playerID
     }
+  }
+
+  Player.firstEmptyInventorySlot = function (playerInfo) {
+    for (var i = 0; i < playerInfo.inventory.length; i++) {
+      if (null === playerInfo.inventory[i]) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {

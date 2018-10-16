@@ -16,7 +16,7 @@ ItemUIButton.prototype.updateGFX = function () {
     return;
   }
   
-  var item = player.inventory[this.slot];
+  var item = player.info.inventory[this.slot];
   if (item) {
     this.gameObj.visible = true;
     this.gameObj.animations.play(item);
