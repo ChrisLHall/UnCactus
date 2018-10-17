@@ -163,6 +163,8 @@ function processPlanets () {
         if (age > Cactus.DIE_TIME && Math.random() < Cactus.DIE_CHANCE) {
           slot.type = "empty";
           slot.birthTick = metadata["serverTicks"];
+          slot.itemAvailable = null;
+          slot.pollinatedType = null;
           changed = true;
         } else if (age === Cactus.GROWTH_AGES[2]) {
           // flowering age
@@ -229,6 +231,7 @@ function onSocketConnection (client) {
   // Listen for move player message
   client.on('move player', onMovePlayer);
   client.on('collect item', onCollectItem);
+  client.on('use item', onUseItem);
 
   client.on('shout', onShout)
   // TEMP chat
@@ -311,33 +314,44 @@ function onMovePlayer (data) {
 }
 
 function onCollectItem (data) {
-  var player = playerBySocket(this)
-  var planet = planetByID(data.planetID)
+  var player = playerBySocket(this);
+  var planet = planetByID(data.planetID);
   if (!planet || !player) {
     console.log("Unable to collect item " + player.toString() + " " + planet.toString());
   }
 
   var slot = planet.info.slots[data.slot]
   var changed = false;
-  if (slot.type.startsWith("cactus")) {
-    var invSlot = Player.firstEmptyInventorySlot(player.info);
-    if (slot.itemAvailable && invSlot !== -1) {
-      player.info.inventory[invSlot] = slot.itemAvailable;
-      slot.itemAvailable = null;
-      changed = true;
-    }
+
+  var invSlot = Player.firstEmptyInventorySlot(player.info);
+  if (slot.itemAvailable && invSlot !== -1) {
+    player.info.inventory[invSlot] = slot.itemAvailable;
+    slot.itemAvailable = null;
+    changed = true;
   }
 
   if (changed) {
-    // TODO REFACTOR THIS FKN MESS ?
     setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info);
+    setPlayerInfo(player.kiiObj, player, player.playerID, player.info);
+  }
+}
+
+function onUseItem (data) {
+  var player = playerBySocket(this);
+  var invSlot = player.info.inventory[data.slot];
+  if (!player) {
+    console.log("unable to use item: " + player.toString());
+  }
+
+  if (null !== invSlot) {
+    // TODO make this do something
+    player.info.inventory[data.slot] = null;
     setPlayerInfo(player.kiiObj, player, player.playerID, player.info);
   }
 }
 
 function onShout (data) {
   io.emit("shout", data) // data just has player id
-
 }
 
 function onReceiveChat (msg) {

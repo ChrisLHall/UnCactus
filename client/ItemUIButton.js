@@ -28,5 +28,5 @@ ItemUIButton.prototype.updateGFX = function () {
 ItemUIButton.prototype.onClick = function(pointer) {
     // the click used by UI has already been handled
     // TODO logic to use item
-    console.log("Clicked item slot " + this.slot);
+    socket.emit('use item', { slot: this.slot });
 }
