@@ -154,7 +154,6 @@ function onConfirmID (data) {
   game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT, 0.3, 0.3)
   game.camera.focusOnXY(startX, startY)
 
-  socket.emit("query player info", player.playerID)
   socket.emit("query all planets", {});
 }
 

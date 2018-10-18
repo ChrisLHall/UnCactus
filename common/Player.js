@@ -92,9 +92,6 @@
   }
 
   Player.firstEmptyInventorySlot = function (playerInfo) {
-    console.log("First inv slot: player info, info inventory");
-    console.log(playerInfo);
-    console.log(playerInfo.inventory);
     for (var i = 0; i < playerInfo.inventory.length; i++) {
       if (null === playerInfo.inventory[i]) {
         return i;

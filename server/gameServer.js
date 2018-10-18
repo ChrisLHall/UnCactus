@@ -343,7 +343,7 @@ function onUseItem (data) {
     console.log("unable to use item: " + player.toString());
   }
 
-  if (null !== invSlot) {
+  if (invSlot) {
     // TODO make this do something
     player.info.inventory[data.slot] = null;
     setPlayerInfo(player.kiiObj, player, player.playerID, player.info);
@@ -361,14 +361,15 @@ function onReceiveChat (msg) {
 }
 
 function onQueryPlayerInfo (playerID) {
+  console.log("On query player " + playerID);
   this.emit('update player info', playerByID(playerID).info)
 }
 function onQueryPlanetInfo (planetID) {
+  console.log("On query planet " + planetID);
   this.emit('update planet info', planetByID(planetID).info)
 }
 function onQueryAllPlanets (_) {
   var planetList = Planet.planetListToInfoList(planets);
-  console.log("someone queried all planets")
   this.emit('update all planets', planetList);
 }
 
@@ -404,6 +405,7 @@ function getOrInitPlayerInfo(player, playerID) {
       var info = result[0]._customInfo
       CommonUtil.validate(info, Player.generateNewInfo(playerID))
       player.info = info
+      player.socket.emit('update player info', player.info);
     } else {
       console.log(playerID + ": PlayerInfo query failed, returned no objects")
       setPlayerInfo(null, player, playerID, Player.generateNewInfo(playerID))
@@ -431,10 +433,9 @@ function setPlayerInfo(existingKiiObj, player, playerID, playerInfo) {
   }
 
   obj.save().then(function (obj) {
-    player.kiiObj = obj
-    player.info = obj._customInfo
-    console.log(playerID + ": player info save succeeded");
-    player.socket.emit('update player info', player.info)
+    player.kiiObj = obj;
+    player.info = obj._customInfo;
+    player.socket.emit('update player info', player.info);
   }).catch(function (error) {
     var errorString = "" + error.code + ": " + error.message
     console.log(playerID + ": Unable to create player info: " + errorString);
@@ -507,10 +508,9 @@ function setPlanetInfo(existingKiiObj, planet, planetID, planetInfo) {
   }
 
   obj.save().then(function (obj) {
-    planet.kiiObj = obj
-    planet.info = obj._customInfo
-    console.log(planetID + ": planet info save succeeded");
-    io.emit('update planet info', planet.info)
+    planet.kiiObj = obj;
+    planet.info = obj._customInfo;
+    io.emit('update planet info', planet.info);
   }).catch(function (error) {
     var errorString = "" + error.code + ": " + error.message
     console.log(playerID + ": Unable to create planet info: " + errorString);
