@@ -273,8 +273,10 @@ function onNewPlayer (data) {
   getOrInitPlayerInfo(newPlayer, newPlayer.playerID)
 
   this.emit('confirm id', {playerID: newPlayer.playerID})
+  // update the player's clock
+  this.emit('server tick', {serverTicks: metadata["serverTicks"]})
   // Broadcast new player to other connected socket clients
-  this.broadcast.emit('new player', {playerID: newPlayer.playerID, x: newPlayer.getX(), y: newPlayer.getY()})
+  this.broadcast.emit('new player', {playerID: newPlayer.playerID, x: newPlayer.x, y: newPlayer.y})
 
   // Send existing players to the new player
   var i, existingPlayer
@@ -286,7 +288,7 @@ function onNewPlayer (data) {
       players.splice(i, 1)
       i--
     } else {
-      this.emit('new player', {playerID: existingPlayer.playerID, x: existingPlayer.getX(), y: existingPlayer.getY()})
+      this.emit('new player', {playerID: existingPlayer.playerID, x: existingPlayer.x, y: existingPlayer.y})
     }
   }
 
@@ -305,12 +307,12 @@ function onMovePlayer (data) {
   }
 
   // Update player position
-  movePlayer.setX(data.x)
-  movePlayer.setY(data.y)
-  movePlayer.setAngle(data.angle)
+  movePlayer.x = data.x;
+  movePlayer.y = data.y;
+  movePlayer.angle = data.angle;
 
   // Broadcast updated position to other connected socket clients
-  this.broadcast.emit('move player', {playerID: movePlayer.playerID, x: movePlayer.getX(), y: movePlayer.getY(), angle: movePlayer.getAngle()})
+  this.broadcast.emit('move player', {playerID: movePlayer.playerID, x: movePlayer.x, y: movePlayer.y, angle: movePlayer.angle})
 }
 
 function onCollectItem (data) {

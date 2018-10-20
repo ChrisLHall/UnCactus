@@ -47,8 +47,8 @@ LocalCactus.prototype.update = function () {
   this.gameObj.x = this.hostPlanetObj.gameObj.x + len * Math.cos(rads)
   this.gameObj.y = this.hostPlanetObj.gameObj.y + len * Math.sin(rads)
 
+  // TODO IMPLEMENT THE ARROW BUTTONS GETTING CREATED / DESTROYED
   // update buttons
-  // TODO MOVE THIS LOGIC ONTO THE SERVER PROBABLY
   if (this.info.itemAvailable && !this.itemButton) {
     this.itemButton = new OnPlanetItemButton(this, this.slot, this.group, "pollen");
   } else if (!this.info.itemAvailable && this.itemButton) {

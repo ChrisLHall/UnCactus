@@ -19,6 +19,9 @@ var LocalPlayer = function (playerID, group, startX, startY, playerInfo) {
   this.targetPlanetObj = null
   this.sittingOnPlanetObj = null
 
+  // Item slot we're about to use
+  this.selectedItemSlot = null;
+
   this.setInfo(playerInfo)
 }
 
@@ -27,10 +30,14 @@ LocalPlayer.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Player.generateNewInfo(this.playerID))
   this.info = info
   if (null != this.info) {
-    for (var i = 0; i < itemUIButtons.length; i++) {
-      itemUIButtons[i].updateGFX();
-    }
+    this.updateInventoryGFX();
     this.gameObj.tint = LocalPlayer.colors[this.info.color];
+  }
+}
+
+LocalPlayer.prototype.updateInventoryGFX = function () {
+  for (var i = 0; i < itemUIButtons.length; i++) {
+    itemUIButtons[i].updateGFX();
   }
 }
 
@@ -50,15 +57,23 @@ LocalPlayer.prototype.teleportToPlanet = function (planet) {
   this.targetPlanetObj = planet
 }
 
-LocalPlayer.prototype.tryAddItem = function (itemType) {
-  // TODO SYNC THIS TO THE SERVER
-  for (var i = 0; i < NUM_ITEM_SLOTS; i++) {
-    if (!this.inventory[i]) {
-      this.inventory[i] = itemType;
-      return true;
-    }
+LocalPlayer.prototype.itemRequiresTarget = function (slot) {
+  if (null === slot) {
+    return false;
   }
-  return false;
+  var item = this.info.inventory[slot];
+  if (!item) {
+    return false;
+  }
+
+  return (item === "pollen" || item === "seed");
+}
+
+LocalPlayer.prototype.currentSelectedItem = function () {
+  if (null === this.selectedItemSlot) {
+    return null;
+  }
+  return this.info.inventory(this.selectedItemSlot);
 }
 
 LocalPlayer.prototype.exists = function () {
@@ -93,8 +108,11 @@ LocalPlayer.prototype.update = function () {
   this.gameObj.x += delta.x
   this.gameObj.y += delta.y
 
-  if (null != this.sittingOnPlanetObj) {
+  if (null !== this.sittingOnPlanetObj) {
     this.gameObj.angle += this.sittingOnPlanetObj.info.rotSpeed
+  } else {
+    // cannot select items for use if you are flying around
+    this.selectedItemSlot = null;
   }
 }
 
