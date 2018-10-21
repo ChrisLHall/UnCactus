@@ -11,7 +11,6 @@ var Cactus = require('../common/Cactus')
 var Planet = require('../common/Planet')
 Planet.generateCactusInfo = Cactus.generateNewInfo
 
-console.log("Cactus: " + Cactus.generateNewInfo)
 var CommonUtil = require('../common/CommonUtil')
 var kii = require('kii-cloud-sdk').create()
 var KiiServerCreds = require('./KiiServerCreds')()
@@ -170,6 +169,13 @@ function processPlanets () {
           // flowering age
           slot.itemAvailable = "pollen"; // TODO pollen types
           changed = true;
+        } else if (age === Cactus.GROWTH_AGES[3]) {
+          // TODO implement pollen logic for creating seeds
+          if (Math.random() < .3) {
+            slot.itemAvailable = "seed";
+            slot.pollinatedType = null;
+            changed = true;
+          }
         }
       }
     }
@@ -232,6 +238,7 @@ function onSocketConnection (client) {
   client.on('move player', onMovePlayer);
   client.on('collect item', onCollectItem);
   client.on('use item', onUseItem);
+  client.on('delete item', onDeleteItem);
 
   client.on('shout', onShout)
   // TEMP chat
@@ -347,6 +354,18 @@ function onUseItem (data) {
 
   if (invSlot) {
     // TODO make this do something
+    player.info.inventory[data.slot] = null;
+    setPlayerInfo(player.kiiObj, player, player.playerID, player.info);
+  }
+}
+
+function onDeleteItem (data) {var player = playerBySocket(this);
+  var invSlot = player.info.inventory[data.slot];
+  if (!player) {
+    console.log("unable to delete item: " + player.toString());
+  }
+
+  if (invSlot) {
     player.info.inventory[data.slot] = null;
     setPlayerInfo(player.kiiObj, player, player.playerID, player.info);
   }

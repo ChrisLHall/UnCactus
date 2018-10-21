@@ -7,6 +7,7 @@ var LocalCactus = function (hostPlanetObj, slot, group, info) {
   this.type = "empty";
   this.currentFrame = 0;
   this.itemButton = null;
+  this.arrowButton = null;
 
   this.gameObj = group.create(-10000, -10000, 'empty')
   this.gameObj.anchor.setTo(0.5, 0.9)
@@ -28,8 +29,6 @@ LocalCactus.prototype.setInfo = function (info) {
     }
     this.updateAnim()
 
-    // TODO CREATE THE UI BUTTON THING BASED ON THE SERVER
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     var scaleFactor = 2;
     if (this.type === "beehives") {
       scaleFactor = 3;
@@ -48,16 +47,37 @@ LocalCactus.prototype.update = function () {
   this.gameObj.y = this.hostPlanetObj.gameObj.y + len * Math.sin(rads)
 
   // TODO IMPLEMENT THE ARROW BUTTONS GETTING CREATED / DESTROYED
+  var shouldHaveArrowButton = false;
+  if (player && player.sittingOnPlanetObj === this.hostPlanetObj) {
+    var pendingUseItem = player.info.inventory[player.selectedItemSlot];
+    shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type.startsWith("cactus") && this.frame === 2)
+        || (pendingUseItem === "seed" && this.info.type === "empty");
+  }
+  var shouldHaveItemButton = !shouldHaveArrowButton && this.info.itemAvailable;
+  var shouldHaveItemType = this.info.itemAvailable;
   // update buttons
-  if (this.info.itemAvailable && !this.itemButton) {
+  if (shouldHaveArrowButton && !this.arrowButton) {
+    this.arrowButton = new OnPlanetSelectButton(this, this.slot, this.group);
+  }
+  if (shouldHaveItemButton && !this.itemButton) {
     this.itemButton = new OnPlanetItemButton(this, this.slot, this.group, "pollen");
-  } else if (!this.info.itemAvailable && this.itemButton) {
+  }
+  
+  if (!shouldHaveItemButton && this.itemButton) {
     this.itemButton.destroy();
     this.itemButton = null;
   }
+  if (!shouldHaveArrowButton && this.arrowButton) {
+    this.arrowButton.destroy();
+    this.arrowButton = null;
+  }
 
   if (this.itemButton) {
+    this.itemButton.setItemType(shouldHaveItemType);
     this.itemButton.update();
+  }
+  if (this.arrowButton) {
+    this.arrowButton.update();
   }
 
   this.updateAnim();

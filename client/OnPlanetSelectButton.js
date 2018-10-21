@@ -1,13 +1,13 @@
 /* global game */
 
-var OnPlanetSelectButton = function (hostObj, placeIdx, group, itemType) {
+var OnPlanetSelectButton = function (hostObj, placeIdx, group) {
   this.hostObj = hostObj;
   this.hostPlanetObj = this.hostObj.hostPlanetObj;
   this.placeIdx = placeIdx
 
   this.gameObj = group.create(-10000, -10000, 'itemsUI')
   this.gameObj.anchor.setTo(0.5, 0.5)
-  for (var i = 0; i <= 3; i++) {
+  for (var i = 0; i < 8; i++) {
     this.gameObj.animations.add(i.toString(), [i], 1, true)
   }
   this.gameObj.animations.play("3")
@@ -33,12 +33,7 @@ OnPlanetSelectButton.prototype.onClick = function () {
   clickUsedByUI = true;
   // TODO ROUTE THIS THROUGH THE SERVER
   console.log("clicked on select button on " + this.hostPlanetObj.planetID);
-  /*if (player) {
-    if (player.tryAddItem(this.itemType)) {
-      this.destroy();
-      this.hostObj.itemButton = null;
-    }
-  }*/
+  
   // so we wanna send a message to the server
   // with planet ID and slot number
   if (player) {

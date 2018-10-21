@@ -100,7 +100,7 @@ LocalPlayer.prototype.update = function () {
     this.gameObj.angle = Math.atan2(delta.y, delta.x) * Phaser.Math.RAD_TO_DEG
   } else {
     // arrived
-    if (null != this.targetPlanetObj) {
+    if (null !== this.targetPlanetObj) {
       this.sittingOnPlanetObj = this.targetPlanetObj
       this.targetPlanet(null)
     }
@@ -112,6 +112,9 @@ LocalPlayer.prototype.update = function () {
     this.gameObj.angle += this.sittingOnPlanetObj.info.rotSpeed
   } else {
     // cannot select items for use if you are flying around
+    this.selectedItemSlot = null;
+  }
+  if (null !== this.selectedItemSlot && !this.info.inventory[this.selectedItemSlot]) {
     this.selectedItemSlot = null;
   }
 }

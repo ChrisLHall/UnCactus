@@ -8,7 +8,7 @@ var OnPlanetItemButton = function (hostObj, placeIdx, group, itemType) {
 
   this.buttonGameObj = group.create(-10000, -10000, 'itemsUI')
   this.buttonGameObj.anchor.setTo(0.5, 0.5)
-  for (var i = 0; i <= 3; i++) {
+  for (var i = 0; i < 8; i++) {
     this.buttonGameObj.animations.add(i.toString(), [i], 1, true)
   }
   this.buttonGameObj.animations.play("2")
@@ -19,6 +19,13 @@ var OnPlanetItemButton = function (hostObj, placeIdx, group, itemType) {
   this.gameObj.anchor.setTo(0.5, 0.5)
   Item.setupAnims(this.gameObj);
   this.gameObj.animations.play(this.itemType);
+}
+
+OnPlanetItemButton.prototype.setItemType = function (newItemType) {
+  if (newItemType && this.itemType !== newItemType) {
+    this.itemType = newItemType;
+    this.gameObj.animations.play(this.itemType);
+  }
 }
   
 OnPlanetItemButton.prototype.update = function () {

@@ -2,12 +2,14 @@ var ItemUIButton = function (group, slot, screenX, screenY) {
   this.group = group;
   this.slot = slot;
 
-  this.button = new UIButton(group, "itemsUI", 0, screenX, screenY, this.onClick)
+  this.button = new UIButton(group, "itemsUI", 0, screenX, screenY, this.onClick);
   this.button.itemUIButton = this; // gotta have a reference to this
-  for (var i = 0; i <= 3; i++) {
+  for (var i = 0; i < 8; i++) {
     this.button.gameObj.animations.add(i.toString(), [i], 1, true)
   }
   this.button.gameObj.animations.play("0")
+  this.deleteButton = new UIButton(group, "itemsUI", 4, screenX, screenY - 100, this.onClickDelete);
+  this.deleteButton.itemUIButton = this;
 
   this.gameObj = group.create(screenX, screenY, "items")
   this.gameObj.obj = this;
@@ -28,6 +30,7 @@ ItemUIButton.prototype.updateGFX = function () {
   } else {
     this.button.gameObj.animations.play("0")
   }
+  this.deleteButton.gameObj.visible = selected;
   
   var item = player.info.inventory[this.slot];
   if (item) {
@@ -57,4 +60,16 @@ ItemUIButton.prototype.onClick = function(pointer) {
   }
   
   player.updateInventoryGFX();
+}
+
+ItemUIButton.prototype.onClickDelete = function(pointer) {
+  // 'this' in this context is the UIButton
+  if (!player) {
+    return;
+  }
+
+  var selected = (player.selectedItemSlot === this.itemUIButton.slot);
+  if (selected) {
+    socket.emit('delete item', { slot: this.itemUIButton.slot });
+  }
 }
