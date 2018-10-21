@@ -26,7 +26,7 @@ RemotePlayer.prototype.setColorIndex = function (ind) {
 
 RemotePlayer.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Player.generateNewInfo(this.playerID))
-  this.playerInfo = info
+  this.info = info
   if (null != info) {
     this.setColorIndex(info.color)
   }

@@ -283,19 +283,19 @@ function onNewPlayer (data) {
   // update the player's clock
   this.emit('server tick', {serverTicks: metadata["serverTicks"]})
   // Broadcast new player to other connected socket clients
-  this.broadcast.emit('new player', {playerID: newPlayer.playerID, x: newPlayer.x, y: newPlayer.y})
+  this.broadcast.emit('new player', {playerID: newPlayer.playerID, x: newPlayer.x, y: newPlayer.y, info: newPlayer.info})
 
   // Send existing players to the new player
-  var i, existingPlayer
+  var i, existingPlayer;
   for (i = 0; i < players.length; i++) {
-    existingPlayer = players[i]
+    existingPlayer = players[i];
     if (existingPlayer.playerID == newPlayer.playerID) {
       // boot duplicate player
-      existingPlayer.socket.disconnect()
-      players.splice(i, 1)
-      i--
+      existingPlayer.socket.disconnect();
+      players.splice(i, 1);
+      i--;
     } else {
-      this.emit('new player', {playerID: existingPlayer.playerID, x: existingPlayer.x, y: existingPlayer.y})
+      this.emit('new player', { playerID: existingPlayer.playerID, x: existingPlayer.x, y: existingPlayer.y, info: existingPlayer.info });
     }
   }
 
