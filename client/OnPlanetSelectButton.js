@@ -1,9 +1,9 @@
 /* global game */
 
-var OnPlanetSelectButton = function (hostObj, placeIdx, group) {
+var OnPlanetSelectButton = function (hostObj, slot, group) {
   this.hostObj = hostObj;
   this.hostPlanetObj = this.hostObj.hostPlanetObj;
-  this.placeIdx = placeIdx
+  this.slot = slot
 
   this.gameObj = group.create(-10000, -10000, 'itemsUI')
   this.gameObj.anchor.setTo(0.5, 0.5)
@@ -16,7 +16,7 @@ var OnPlanetSelectButton = function (hostObj, placeIdx, group) {
 }
   
 OnPlanetSelectButton.prototype.update = function () {
-  var degs = this.hostPlanetObj.gameObj.angle + this.placeIdx * 60;
+  var degs = this.hostPlanetObj.gameObj.angle + this.slot * 60;
   this.gameObj.angle = degs + 90;
   var rads = degs * CommonUtil.DEG_TO_RAD;
   var len = LocalPlanet.ORIG_RADIUS * this.hostPlanetObj.info.size + OnPlanetSelectButton.EXTRA_OFFSET;
@@ -31,13 +31,13 @@ OnPlanetSelectButton.prototype.onClick = function () {
     return;
   }
   clickUsedByUI = true;
-  // TODO ROUTE THIS THROUGH THE SERVER
   console.log("clicked on select button on " + this.hostPlanetObj.planetID);
   
   // so we wanna send a message to the server
   // with planet ID and slot number
-  if (player) {
-    socket.emit("collect item", { planetID: this.hostPlanetObj.planetID, slot: this.hostObj.slot })
+  if (player && null !== player.selectedItemSlot) {
+    socket.emit('use item', { slot: player.selectedItemSlot, targetPlanet: this.hostPlanetObj.planetID, targetSlot: this.slot });
+    player.selectedItemSlot = null;
   }
 }
 

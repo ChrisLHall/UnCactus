@@ -50,7 +50,7 @@ LocalCactus.prototype.update = function () {
   var shouldHaveArrowButton = false;
   if (player && player.sittingOnPlanetObj === this.hostPlanetObj) {
     var pendingUseItem = player.info.inventory[player.selectedItemSlot];
-    shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type.startsWith("cactus") && this.frame === 2)
+    shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type.startsWith("cactus") && this.currentFrame === 2)
         || (pendingUseItem === "seed" && this.info.type === "empty");
   }
   var shouldHaveItemButton = !shouldHaveArrowButton && this.info.itemAvailable;

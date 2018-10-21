@@ -41,9 +41,7 @@
     return result
   }
 
-  Planet.generateCactusInfo = function (type, birthTick) {
-    return { type: type, birthTick: birthTick };
-  }
+  Planet.generateCactusInfo = function (type, birthTick) { }; // Always re-assign this function to Cactus.generateNewInfo
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Planet

@@ -129,8 +129,8 @@ function tick() {
   if (!metadata.hasOwnProperty("serverTicks")) {
     metadata['serverTicks'] = 0;
   }
-  metadata["serverTicks"] += 1;
-  io.emit('server tick', {serverTicks: metadata["serverTicks"]})
+  metadata.serverTicks += 1;
+  io.emit('server tick', {serverTicks: metadata.serverTicks})
   writeMetadata()
 
   processPlanets()
@@ -151,17 +151,17 @@ function processPlanets () {
     }
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
       var slot = planetSlots[slotIdx]
-      var age = metadata["serverTicks"] - slot.birthTick
+      var age = metadata.serverTicks - slot.birthTick
       if (slot.type === "empty") {
         if (age > Cactus.EMPTY_SPAWN_TIME && Math.random() < Cactus.SPAWN_CHANCE) {
           slot.type = "cactus1";
-          slot.birthTick = metadata["serverTicks"];
+          slot.birthTick = metadata.serverTicks;
           changed = true;
         }
       } else if (slot.type.startsWith("cactus")) {
         if (age > Cactus.DIE_TIME && Math.random() < Cactus.DIE_CHANCE) {
           slot.type = "empty";
-          slot.birthTick = metadata["serverTicks"];
+          slot.birthTick = metadata.serverTicks;
           slot.itemAvailable = null;
           slot.pollinatedType = null;
           changed = true;
@@ -171,7 +171,12 @@ function processPlanets () {
           changed = true;
         } else if (age === Cactus.GROWTH_AGES[3]) {
           // TODO implement pollen logic for creating seeds
-          if (Math.random() < .3) {
+          if (slot.itemAvailable === "pollen") {
+            slot.itemAvailable = null;
+            changed = true;
+          }
+          if (Math.random() < .3
+              || (null !== slot.pollinatedType && slot.pollinatedType.startsWith("pollen"))) {
             slot.itemAvailable = "seed";
             slot.pollinatedType = null;
             changed = true;
@@ -192,7 +197,7 @@ function DEBUGKillAllPlants () {
     var planetSlots = planet.info.slots
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
       planetSlots[slotIdx].type = "empty"
-      planetSlots[slotIdx].birthTick = metadata["serverTicks"]
+      planetSlots[slotIdx].birthTick = metadata.serverTicks
     }
     setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)
   }
@@ -203,7 +208,7 @@ function DEBUGReplant () {
     var planetSlots = planet.info.slots
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
       planetSlots[slotIdx].type = "cactus1"
-      planetSlots[slotIdx].birthTick = metadata["serverTicks"]
+      planetSlots[slotIdx].birthTick = metadata.serverTicks
     }
     setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)
   }
@@ -281,7 +286,7 @@ function onNewPlayer (data) {
 
   this.emit('confirm id', {playerID: newPlayer.playerID})
   // update the player's clock
-  this.emit('server tick', {serverTicks: metadata["serverTicks"]})
+  this.emit('server tick', {serverTicks: metadata.serverTicks})
   // Broadcast new player to other connected socket clients
   this.broadcast.emit('new player', {playerID: newPlayer.playerID, x: newPlayer.x, y: newPlayer.y, info: newPlayer.info})
 
@@ -351,11 +356,37 @@ function onUseItem (data) {
   if (!player) {
     console.log("unable to use item: " + player.toString());
   }
+  var planet = null;
+  var planetSlot = null;
+  if (data.targetPlanet) {
+    planet = planetByID(data.targetPlanet);
+    if (planet) {
+      planetSlot = planet.info.slots[0 || data.targetSlot];
+    }
+  }
 
-  if (invSlot) {
-    // TODO make this do something
+  var planetChanged = false;
+  var itemUsed = false;
+  if (invSlot === "pollen" && planetSlot) {
+    if (planetSlot.type.startsWith("cactus") && null === planetSlot.pollinatedType) {
+      planetSlot.pollinatedType = invSlot;
+      itemUsed = true;
+      planetChanged = true;
+    }
+  } else if (invSlot === "seed" && planetSlot) {
+    if (planetSlot.type === "empty") {
+      planetSlot.type = "cactus1"; // TODO different types
+      planetSlot.birthTick = metadata.serverTicks;
+      itemUsed = true;
+      planetChanged = true;
+    }
+  }
+  if (itemUsed) {
     player.info.inventory[data.slot] = null;
     setPlayerInfo(player.kiiObj, player, player.playerID, player.info);
+  }
+  if (planetChanged) {
+    setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info);
   }
 }
 

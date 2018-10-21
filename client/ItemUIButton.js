@@ -54,7 +54,7 @@ ItemUIButton.prototype.onClick = function(pointer) {
     if (player.itemRequiresTarget(this.itemUIButton.slot)) {
       player.selectedItemSlot = this.itemUIButton.slot;
     } else {
-      socket.emit('use item', { slot: this.itemUIButton.slot });
+      socket.emit('use item', { slot: this.itemUIButton.slot, targetPlanet: null, targetSlot: null });
       player.selectedItemSlot = null;
     }
   }

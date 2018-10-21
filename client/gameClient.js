@@ -162,7 +162,6 @@ function onNewPlayer (data) {
   console.log('New player connected:', data.playerID)
 
   // Add new player to the remote players array
-  console.log(data);
   var remote = new RemotePlayer(data.playerID, playerGroup, data.x, data.y, data.info);
   glob.otherPlayers.push(remote)
 }
