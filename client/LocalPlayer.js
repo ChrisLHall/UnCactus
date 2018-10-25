@@ -119,4 +119,10 @@ LocalPlayer.prototype.update = function () {
   }
 }
 
+LocalPlayer.prototype.distance = function (otherGameObj) {
+  var dx = this.gameObj.x - otherGameObj.x;
+  var dy = this.gameObj.y - otherGameObj.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
 window.LocalPlayer = LocalPlayer

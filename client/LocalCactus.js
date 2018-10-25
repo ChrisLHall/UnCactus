@@ -8,6 +8,8 @@ var LocalCactus = function (hostPlanetObj, slot, group, info) {
   this.currentFrame = 0;
   this.itemButton = null;
   this.arrowButton = null;
+  this.emitterType = null;
+  this.emitter = game.add.emitter(-10000, -10000, 10);
 
   this.gameObj = group.create(-10000, -10000, 'empty')
   this.gameObj.anchor.setTo(0.5, 0.9)
@@ -27,7 +29,11 @@ LocalCactus.prototype.setInfo = function (info) {
       this.type = newType
       this.gameObj.loadTexture(this.type, 0);
     }
-    this.updateAnim()
+    // stop the particle emitter because it is almost guaranteed to be off-screen
+    this.emitter.kill();
+    this.emitterType = null;
+    
+    this.updateAnim();
 
     var scaleFactor = 2;
     if (this.type === "beehives") {
@@ -45,6 +51,8 @@ LocalCactus.prototype.update = function () {
   var len = LocalPlanet.ORIG_RADIUS * this.hostPlanetObj.info.size
   this.gameObj.x = this.hostPlanetObj.gameObj.x + len * Math.cos(rads)
   this.gameObj.y = this.hostPlanetObj.gameObj.y + len * Math.sin(rads)
+  this.emitter.x = this.hostPlanetObj.gameObj.x + (len + 30) * Math.cos(rads);
+  this.emitter.y = this.hostPlanetObj.gameObj.y + (len + 30) * Math.sin(rads);
 
   // TODO IMPLEMENT THE ARROW BUTTONS GETTING CREATED / DESTROYED
   var shouldHaveArrowButton = false;
@@ -78,6 +86,30 @@ LocalCactus.prototype.update = function () {
   }
   if (this.arrowButton) {
     this.arrowButton.update();
+  }
+
+  var shouldHaveEmitterType = null;
+  if (this.info.pollinatedType) {
+    shouldHaveEmitterType = "pollinated";
+  } else if (this.info.type === "beehives") {
+    shouldHaveEmitterType = "bees";
+  }
+  // TODO add the one for pollen
+  if (shouldHaveEmitterType === "bees" && this.emitterType !== "bees") {
+    this.emitterType = "bees";
+    this.emitter.kill();
+    this.emitter.makeParticles("particles", 1);
+    this.emitter.gravity = 0;
+    this.emitter.start(false, 600, 200);
+  } else if (shouldHaveEmitterType === "pollinated" && this.emitterType !== "pollinated") {
+    this.emitterType = "pollinated";
+    this.emitter.kill();
+    this.emitter.makeParticles("particles", 0);
+    this.emitter.gravity = 0;
+    this.emitter.start(false, 600, 1000);
+  }
+  if (this.emitterType && !shouldHaveEmitterType) {
+    this.emitter.kill();
   }
 
   this.updateAnim();

@@ -176,7 +176,7 @@ function processPlanets () {
             changed = true;
           }
           if (Math.random() < .3
-              || (null !== slot.pollinatedType && slot.pollinatedType.startsWith("pollen"))) {
+              || (slot.pollinatedType && slot.pollinatedType.startsWith("pollen"))) {
             slot.itemAvailable = "seed";
             slot.pollinatedType = null;
             changed = true;

@@ -20,6 +20,8 @@ function preload () {
   game.load.spritesheet('playerbee', 'assets/images/bigbee.png', 64, 64);
   game.load.spritesheet('items', 'assets/images/items.png', 64, 64);
   game.load.spritesheet('itemsUI', 'assets/images/itemsUI.png', 64, 64);
+
+  game.load.spritesheet('particles', 'assets/images/particles.png', 16, 16);
 }
 
 var socket // Socket connection
@@ -233,29 +235,32 @@ function onUpdateAllPlanets (data) {
 
 
 function update () {
-  if (null != player) {
-    player.update()
+  if (player) {
+    player.update();
   }
   for (var i = 0; i < glob.intermittents.length; i++) {
-    glob.intermittents[i].update()
+    glob.intermittents[i].update();
     if (glob.intermittents[i].finished) {
-        glob.intermittents.splice(i, 1)
-        i--
+        glob.intermittents.splice(i, 1);
+        i--;
     }
   }
   for (var i = 0; i < glob.otherPlayers.length; i++) {
-    glob.otherPlayers[i].update()
+    glob.otherPlayers[i].update();
   }
   for (var i = 0; i < glob.planets.length; i++) {
-    glob.planets[i].update()
+    var planet = glob.planets[i];
+    if (player && player.distance(planet.gameObj) < 700) {
+      glob.planets[i].update();
+    }
   }
   for (var i = 0; i < glob.shouts.length; i++) {
-    glob.shouts[i].update()
+    glob.shouts[i].update();
   }
-  spaceBG.tilePosition.x = -game.camera.x / 3
-  spaceBG.tilePosition.y = -game.camera.y / 3
-  spaceFG.tilePosition.x = -game.camera.x
-  spaceFG.tilePosition.y = -game.camera.y
+  spaceBG.tilePosition.x = -game.camera.x / 3;
+  spaceBG.tilePosition.y = -game.camera.y / 3;
+  spaceFG.tilePosition.x = -game.camera.x;
+  spaceFG.tilePosition.y = -game.camera.y;
 
   updateUI();
 }
