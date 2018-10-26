@@ -16,6 +16,11 @@
     seed: 0,
     pollen: 1,
     honey: 2,
+    nectar: 3,
+  }
+
+  Item.requiresTarget = function (item) {
+    return (item === "pollen" || item === "seed" || item === "nectar");
   }
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {

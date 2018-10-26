@@ -147,6 +147,7 @@ function processPlanets () {
       console.log("Adding a beehive to " + planet.planetID);
       planetSlots[0].type = "beehives";
       planetSlots[0].birthTick = metadata['serverTicks'];
+      planetSlots[0].nectar = 0;
       changed = true;
     }
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
@@ -167,11 +168,21 @@ function processPlanets () {
           changed = true;
         } else if (age === Cactus.GROWTH_AGES[2]) {
           // flowering age
-          slot.itemAvailable = "pollen"; // TODO pollen types
+          if (Math.random() < .5) {
+            slot.itemAvailable = "pollen"; // TODO pollen types
+          } else {
+            slot.itemAvailable = "nectar";
+          }
+          // when a plant flowers, add 1 nectar
+          var beehiveSlotIdx = Planet.findSlotOfType(planetSlots, "beehives");
+          if (null !== beehiveSlotIdx) {
+            var beehiveSlot = planetSlots[beehiveSlotIdx];
+            beehiveSlot.nectar = beehiveSlot.nectar || 0;
+            beehiveSlot.nectar = Math.min(10, beehiveSlot.nectar + 1);
+          }
           changed = true;
         } else if (age === Cactus.GROWTH_AGES[3]) {
-          // TODO implement pollen logic for creating seeds
-          if (slot.itemAvailable === "pollen") {
+          if (slot.itemAvailable === "pollen" || slot.itemAvailable === "nectar") {
             slot.itemAvailable = null;
             changed = true;
           }
@@ -181,6 +192,14 @@ function processPlanets () {
             slot.pollinatedType = null;
             changed = true;
           }
+        }
+      } else if (slot.type === "beehives") {
+        // TODO come up with a good way to ensure the right properties
+        slot.nectar = slot.nectar || 0;
+        if (!slot.itemAvailable && slot.nectar >= 5) {
+          slot.itemAvailable = "honey";
+          slot.nectar -= 5;
+          changed = true;
         }
       }
     }
@@ -379,6 +398,15 @@ function onUseItem (data) {
       planetSlot.birthTick = metadata.serverTicks;
       itemUsed = true;
       planetChanged = true;
+    }
+  } else if (invSlot === "nectar" && planetSlot) {
+    if (planetSlot.type === "beehives") {
+      planetSlot.nectar = planetSlot.nectar || 0;
+      if (planetSlot.nectar < 10) {
+        planetSlot.nectar++;
+        itemUsed = true;
+        planetChanged = true;
+      }
     }
   }
   if (itemUsed) {

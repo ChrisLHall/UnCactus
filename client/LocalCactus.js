@@ -54,12 +54,18 @@ LocalCactus.prototype.update = function () {
   this.emitter.x = this.hostPlanetObj.gameObj.x + (len + 30) * Math.cos(rads);
   this.emitter.y = this.hostPlanetObj.gameObj.y + (len + 30) * Math.sin(rads);
 
-  // TODO IMPLEMENT THE ARROW BUTTONS GETTING CREATED / DESTROYED
+  this.updateButtons();
+  this.updateParticles();
+  this.updateAnim();
+}
+
+LocalCactus.prototype.updateButtons = function () {
   var shouldHaveArrowButton = false;
   if (player && player.sittingOnPlanetObj === this.hostPlanetObj) {
     var pendingUseItem = player.info.inventory[player.selectedItemSlot];
-    shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type.startsWith("cactus") && this.currentFrame === 2)
-        || (pendingUseItem === "seed" && this.info.type === "empty");
+    shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type.startsWith("cactus") && this.currentFrame === 2 && !this.info.pollinatedType)
+        || (pendingUseItem === "seed" && this.info.type === "empty")
+        || (pendingUseItem === "nectar" && this.info.type === "beehives");
   }
   var shouldHaveItemButton = !shouldHaveArrowButton && this.info.itemAvailable;
   var shouldHaveItemType = this.info.itemAvailable;
@@ -88,6 +94,9 @@ LocalCactus.prototype.update = function () {
     this.arrowButton.update();
   }
 
+}
+
+LocalCactus.prototype.updateParticles = function () {
   var shouldHaveEmitterType = null;
   if (this.info.pollinatedType) {
     shouldHaveEmitterType = "pollinated";
@@ -111,8 +120,6 @@ LocalCactus.prototype.update = function () {
   if (this.emitterType && !shouldHaveEmitterType) {
     this.emitter.kill();
   }
-
-  this.updateAnim();
 }
 
 LocalCactus.prototype.updateAnim = function () {

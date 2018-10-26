@@ -1,17 +1,8 @@
 ;(function() {
   var Planet = function (startPlanetID) {
-    var planetID = startPlanetID
-    var kiiObj = null
-    var info = {
-
-    }
-
-    // Define which variables and methods can be accessed
-    return {
-      planetID: planetID,
-      kiiObj: kiiObj,
-      info: info,
-    }
+    this.planetID = startPlanetID
+    this.kiiObj = null
+    this.info = {}
   }
 
   Planet.generateNewInfo = function(planetID, x, y, initialOwnerID) {
@@ -39,6 +30,15 @@
       result.push(planetList[i].info)
     }
     return result
+  }
+
+  Planet.findSlotOfType = function (planetSlots, type) {
+    for (var i = 0; i < planetSlots.length; i++) {
+      if (planetSlots[i].type === type) {
+        return i;
+      }
+    }
+    return null;
   }
 
   Planet.generateCactusInfo = function (type, birthTick) { }; // Always re-assign this function to Cactus.generateNewInfo

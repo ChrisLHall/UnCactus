@@ -66,7 +66,7 @@ LocalPlayer.prototype.itemRequiresTarget = function (slot) {
     return false;
   }
 
-  return (item === "pollen" || item === "seed");
+  return Item.requiresTarget(item);
 }
 
 LocalPlayer.prototype.currentSelectedItem = function () {
