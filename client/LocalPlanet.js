@@ -26,7 +26,7 @@ LocalPlanet.prototype.setInfo = function (info) {
   if (null != this.info) {
     var ownerID = this.info.owner
     var colIdx = 0
-    if (null == ownerID || "" === ownerID) {
+    if (null == ownerID) {
       colIdx = 0
     } else if (null != player && ownerID === player.playerID) {
       colIdx = 1

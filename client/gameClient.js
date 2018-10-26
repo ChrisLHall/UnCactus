@@ -153,7 +153,7 @@ function onConfirmID (data) {
 
   player = new LocalPlayer(data.playerID, playerGroup, startX, startY, Player.generateNewInfo(data.playerID))
 
-  game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_TOPDOWN_TIGHT, 0.3, 0.3)
+  game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_LOCKON, 0.3, 0.3)
   game.camera.focusOnXY(startX, startY)
 
   socket.emit("query all planets", {});

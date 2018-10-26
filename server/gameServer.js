@@ -143,7 +143,7 @@ function processPlanets () {
     var planetSlots = planet.info.slots
     var changed = false
     // ensure there is a beehive on home planets
-    if (planet.info.owner !== '' && planetSlots[0].type !== "beehives") {
+    if (planet.info.owner && planetSlots[0].type !== "beehives") {
       console.log("Adding a beehive to " + planet.planetID);
       planetSlots[0].type = "beehives";
       planetSlots[0].birthTick = metadata['serverTicks'];
@@ -179,6 +179,7 @@ function processPlanets () {
             var beehiveSlot = planetSlots[beehiveSlotIdx];
             beehiveSlot.nectar = beehiveSlot.nectar || 0;
             beehiveSlot.nectar = Math.min(10, beehiveSlot.nectar + 1);
+            console.log("added nectar automatically");
           }
           changed = true;
         } else if (age === Cactus.GROWTH_AGES[3]) {
@@ -462,7 +463,7 @@ function createHomePlanet(playerID) {
 
 function createEmptyPlanet() {
   var planet = new Planet(uuidv4())
-  var planetInfo = Planet.generateNewInfo(planet.planetID, -1800 + Math.random() * 3600, -1800 + Math.random() * 3600, "")
+  var planetInfo = Planet.generateNewInfo(planet.planetID, -1800 + Math.random() * 3600, -1800 + Math.random() * 3600, null)
   planet.info = planetInfo
   return planet
 }
@@ -489,11 +490,8 @@ function getOrInitPlayerInfo(player, playerID) {
     } else {
       console.log(playerID + ": PlayerInfo query failed, returned no objects")
       setPlayerInfo(null, player, playerID, Player.generateNewInfo(playerID))
-      // create home planet
-      var homePlanet = createHomePlanet(playerID)
-      planets.push(homePlanet)
-      setPlanetInfo(null, homePlanet, homePlanet.planetID, homePlanet.info)
     }
+    ensureHomePlanet(player);
   }).catch(function (error) {
     var errorString = "" + error.code + ":" + error.message;
     console.log(playerID + ": PlayerInfo query failed, unable to execute query: " + errorString);
@@ -522,6 +520,16 @@ function setPlayerInfo(existingKiiObj, player, playerID, playerInfo) {
   });
 }
 
+function ensureHomePlanet (player) {
+  var homePlanet = findHomePlanet(player.playerID);
+  if (!homePlanet) {
+    console.log("Creating home planet for " + player.playerID);
+    homePlanet = createHomePlanet(player.playerID)
+    planets.push(homePlanet)
+    setPlanetInfo(null, homePlanet, homePlanet.planetID, homePlanet.info)
+  }
+}
+
 function queryAllPlanets() {
   planets = []
   var queryObject = kii.KiiQuery.queryWithClause(null);
@@ -538,7 +546,7 @@ function queryAllPlanets() {
       var planetInfo = planetResult._customInfo
       var planet = new Planet(planetInfo.planetID)
       planet.kiiObj = planetResult
-      CommonUtil.validate(planetInfo, Planet.generateNewInfo(planetInfo.planetID, 0, 0, ""))
+      CommonUtil.validate(planetInfo, Planet.generateNewInfo(planetInfo.planetID, 0, 0, null))
       planet.info = planetInfo
       planets.push(planet)
     }
@@ -564,7 +572,7 @@ function getPlanetInfo(planet, planetID) {
       console.log(planetID + ": Planet query successful")
       planet.kiiObj = result[0]
       var planetInfo = result[0]._customInfo
-      CommonUtil.validate(planetInfo, Planet.generateNewInfo(planetID, 0, 0, ""))
+      CommonUtil.validate(planetInfo, Planet.generateNewInfo(planetID, 0, 0, null))
       planet.info = planetInfo
     } else {
       console.log(planetID + ": Planet query failed, returned no objects")
@@ -605,28 +613,38 @@ function playerByID (playerID) {
   var i
   for (i = 0; i < players.length; i++) {
     if (players[i].playerID === playerID) {
-      return players[i]
+      return players[i];
     }
   }
-  return null
+  return null;
 }
 
 function playerBySocket (socket) {
   var i
   for (i = 0; i < players.length; i++) {
     if (players[i].socket === socket) {
-      return players[i]
+      return players[i];
     }
   }
-  return null
+  return null;
 }
 
 function planetByID (planetID) {
   var i
   for (i = 0; i < planets.length; i++) {
     if (planets[i].planetID === planetID) {
-      return planets[i]
+      return planets[i];
     }
   }
-  return null
+  return null;
+}
+
+function findHomePlanet (playerID) {
+  var i
+  for (i = 0; i < planets.length; i++) {
+    if (planets[i].info.owner === playerID) {
+      return planets[i];
+    }
+  }
+  return null;
 }
