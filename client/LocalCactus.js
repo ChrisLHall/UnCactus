@@ -60,14 +60,15 @@ LocalCactus.prototype.update = function () {
 }
 
 LocalCactus.prototype.updateButtons = function () {
+  var ownedBySomeoneElse = (player && this.hostPlanetObj.info.owner && player.playerID !== this.hostPlanetObj.info.owner);
   var shouldHaveArrowButton = false;
-  if (player && player.sittingOnPlanetObj === this.hostPlanetObj) {
+  if (player && player.sittingOnPlanetObj === this.hostPlanetObj && !ownedBySomeoneElse) {
     var pendingUseItem = player.info.inventory[player.selectedItemSlot];
     shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type.startsWith("cactus") && this.currentFrame === 2 && !this.info.pollinatedType)
         || (pendingUseItem === "seed" && this.info.type === "empty")
         || (pendingUseItem === "nectar" && this.info.type === "beehives");
   }
-  var shouldHaveItemButton = !shouldHaveArrowButton && this.info.itemAvailable;
+  var shouldHaveItemButton = !shouldHaveArrowButton && !ownedBySomeoneElse && this.info.itemAvailable;
   var shouldHaveItemType = this.info.itemAvailable;
   // update buttons
   if (shouldHaveArrowButton && !this.arrowButton) {

@@ -352,6 +352,13 @@ function onCollectItem (data) {
   var planet = planetByID(data.planetID);
   if (!planet || !player) {
     console.log("Unable to collect item " + player.toString() + " " + planet.toString());
+    return;
+  }
+  var ownedBySomeoneElse = (planet.info.owner && player.playerID !== planet.info.owner);
+  if (ownedBySomeoneElse) {
+    // TODO REMOVE
+    console.log("Player tried to take item from another player's home planet: " + player.playerID);
+    return;
   }
 
   var slot = planet.info.slots[data.slot]
@@ -383,6 +390,12 @@ function onUseItem (data) {
     if (planet) {
       planetSlot = planet.info.slots[0 || data.targetSlot];
     }
+  }
+  var ownedBySomeoneElse = (planet && planet.info.owner && player.playerID !== planet.info.owner);
+  if (ownedBySomeoneElse) {
+    // TODO REMOVE
+    console.log("Player tried to use item on another player's home planet: " + player.playerID);
+    return;
   }
 
   var planetChanged = false;
