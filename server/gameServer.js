@@ -26,6 +26,8 @@ var players = []	// Array of connected players
 var planets = []// Array of planets
 var currentPlanetIdx = 0 // checking for modified planets
 
+var BUCKET_SUFFIX = "";
+
 /* ************************************************
 ** GAME INITIALISATION
 ************************************************ */
@@ -34,6 +36,13 @@ app.use(express.static(path.resolve(__dirname, '../build')))
 http.listen(port, function (err) {
   if (err) {
     throw err
+  }
+
+  if (process.argv.length >= 3 && process.argv[2] === "dev") {
+    console.log("Using DEV databases");
+    BUCKET_SUFFIX = "_DEV";
+  } else {
+    console.log("Using production databases");
   }
 
   initializeKii()
@@ -76,7 +85,7 @@ function fetchMetadata () {
 
   var queryObject = kii.KiiQuery.queryWithClause(null);
 
-  var bucket = kii.Kii.bucketWithName("Metadata");
+  var bucket = kii.Kii.bucketWithName("Metadata" + BUCKET_SUFFIX);
   bucket.executeQuery(queryObject).then(function (params) {
     var queryPerformed = params[0];
     var result = params[1];
@@ -485,7 +494,7 @@ function getOrInitPlayerInfo(player, playerID) {
   var queryObject = kii.KiiQuery.queryWithClause(kii.KiiClause.equals("playerID", playerID));
   queryObject.sortByDesc("_created");
 
-  var bucket = kii.Kii.bucketWithName("PlayerInfo");
+  var bucket = kii.Kii.bucketWithName("PlayerInfo" + BUCKET_SUFFIX);
   bucket.executeQuery(queryObject).then(function (params) {
     var queryPerformed = params[0];
     var result = params[1];
@@ -514,7 +523,7 @@ function getOrInitPlayerInfo(player, playerID) {
 function setPlayerInfo(existingKiiObj, player, playerID, playerInfo) {
   var obj = existingKiiObj
   if (null == obj) {
-    var bucket = kii.Kii.bucketWithName("PlayerInfo");
+    var bucket = kii.Kii.bucketWithName("PlayerInfo" + BUCKET_SUFFIX);
     obj = bucket.createObject();
   }
   for (var key in playerInfo) {
@@ -548,7 +557,7 @@ function queryAllPlanets() {
   var queryObject = kii.KiiQuery.queryWithClause(null);
   queryObject.sortByDesc("_created");
 
-  var bucket = kii.Kii.bucketWithName("Planets");
+  var bucket = kii.Kii.bucketWithName("Planets" + BUCKET_SUFFIX);
   bucket.executeQuery(queryObject).then(function (params) {
     var queryPerformed = params[0];
     var result = params[1];
@@ -573,7 +582,7 @@ function getPlanetInfo(planet, planetID) {
   var queryObject = kii.KiiQuery.queryWithClause(kii.KiiClause.equals("planetID", planetID));
   queryObject.sortByDesc("_created");
 
-  var bucket = kii.Kii.bucketWithName("Planets");
+  var bucket = kii.Kii.bucketWithName("Planets" + BUCKET_SUFFIX);
   bucket.executeQuery(queryObject).then(function (params) {
     var queryPerformed = params[0];
     var result = params[1];
@@ -599,7 +608,7 @@ function getPlanetInfo(planet, planetID) {
 function setPlanetInfo(existingKiiObj, planet, planetID, planetInfo) {
   var obj = existingKiiObj
   if (null == obj) {
-    var bucket = kii.Kii.bucketWithName("Planets");
+    var bucket = kii.Kii.bucketWithName("Planets" + BUCKET_SUFFIX);
     obj = bucket.createObject();
   }
   for (var key in planetInfo) {
