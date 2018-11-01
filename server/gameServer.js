@@ -214,7 +214,7 @@ function processPlanets () {
       }
     }
     if (changed) {
-      setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)
+      setPlanetInfo(planet)
     }
   }
 }
@@ -228,7 +228,7 @@ function DEBUGKillAllPlants () {
       planetSlots[slotIdx].type = "empty"
       planetSlots[slotIdx].birthTick = metadata.serverTicks
     }
-    setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)
+    setPlanetInfo(planet)
   }
 }
 function DEBUGReplant () {
@@ -239,14 +239,14 @@ function DEBUGReplant () {
       planetSlots[slotIdx].type = "cactus1"
       planetSlots[slotIdx].birthTick = metadata.serverTicks
     }
-    setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info)
+    setPlanetInfo(planet)
   }
 }
 function DEBUGGeneratePlanets () {
   for (var i = 0; i < 10; i++) {
     var emptyPlanet = createEmptyPlanet();
     planets.push(emptyPlanet)
-    setPlanetInfo(null, emptyPlanet, emptyPlanet.planetID, emptyPlanet.info)
+    setPlanetInfo(emptyPlanet)
   }
 }
 
@@ -381,8 +381,8 @@ function onCollectItem (data) {
   }
 
   if (changed) {
-    setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info);
-    setPlayerInfo(player.kiiObj, player, player.playerID, player.info);
+    setPlanetInfo(planet);
+    setPlayerInfo(player);
   }
 }
 
@@ -434,10 +434,10 @@ function onUseItem (data) {
   }
   if (itemUsed) {
     player.info.inventory[data.slot] = null;
-    setPlayerInfo(player.kiiObj, player, player.playerID, player.info);
+    setPlayerInfo(player);
   }
   if (planetChanged) {
-    setPlanetInfo(planet.kiiObj, planet, planet.planetID, planet.info);
+    setPlanetInfo(planet);
   }
 }
 
@@ -449,7 +449,7 @@ function onDeleteItem (data) {var player = playerBySocket(this);
 
   if (invSlot) {
     player.info.inventory[data.slot] = null;
-    setPlayerInfo(player.kiiObj, player, player.playerID, player.info);
+    setPlayerInfo(player);
   }
 }
 
@@ -511,7 +511,8 @@ function getOrInitPlayerInfo(player, playerID) {
       player.socket.emit('update player info', player.info);
     } else {
       console.log(playerID + ": PlayerInfo query failed, returned no objects")
-      setPlayerInfo(null, player, playerID, Player.generateNewInfo(playerID))
+      player.info = Player.generateNewInfo(playerID);
+      setPlayerInfo(player);
     }
     ensureHomePlanet(player);
   }).catch(function (error) {
@@ -520,8 +521,10 @@ function getOrInitPlayerInfo(player, playerID) {
   });
 }
 
-function setPlayerInfo(existingKiiObj, player, playerID, playerInfo) {
-  var obj = existingKiiObj
+function setPlayerInfo(player) {
+  var obj = player.kiiObj
+  var playerInfo = player.info
+
   if (null == obj) {
     var bucket = kii.Kii.bucketWithName("PlayerInfo" + BUCKET_SUFFIX);
     obj = bucket.createObject();
@@ -538,7 +541,7 @@ function setPlayerInfo(existingKiiObj, player, playerID, playerInfo) {
     player.socket.emit('update player info', player.info);
   }).catch(function (error) {
     var errorString = "" + error.code + ": " + error.message
-    console.log(playerID + ": Unable to create player info: " + errorString);
+    console.log(player.playerID + ": Unable to create player info: " + errorString);
   });
 }
 
@@ -548,7 +551,7 @@ function ensureHomePlanet (player) {
     console.log("Creating home planet for " + player.playerID);
     homePlanet = createHomePlanet(player.playerID)
     planets.push(homePlanet)
-    setPlanetInfo(null, homePlanet, homePlanet.planetID, homePlanet.info)
+    setPlanetInfo(homePlanet)
   }
 }
 
@@ -605,8 +608,9 @@ function getPlanetInfo(planet, planetID) {
   });
 }
 
-function setPlanetInfo(existingKiiObj, planet, planetID, planetInfo) {
-  var obj = existingKiiObj
+function setPlanetInfo(planet) {
+  var obj = planet.kiiObj;
+  var planetInfo = planet.info;
   if (null == obj) {
     var bucket = kii.Kii.bucketWithName("Planets" + BUCKET_SUFFIX);
     obj = bucket.createObject();
