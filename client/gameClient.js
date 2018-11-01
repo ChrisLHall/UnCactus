@@ -46,6 +46,7 @@ var itemUIButtons = [];
 var NUM_ITEM_SLOTS = 6;
 
 var uiText
+var uiHoneyBar = null;
 var clickUsedByUI = false
 
 var planetGroup
@@ -81,6 +82,8 @@ function create () {
 
   uiText = new UIButton(uiGroup, "pressshout", 0, 220, 80, clickShout);
   uiText = new UIButton(uiGroup, "gohome", 0, 320, 80, clickGoHome);
+  uiHoneyBar = game.add.graphics(0, 0);
+  uiGroup.add(uiHoneyBar);
 
   for (var i = 0; i < NUM_ITEM_SLOTS; i++) {
     itemUIButtons.push(new ItemUIButton(uiGroup, i, WIDTH / (2 * NUM_ITEM_SLOTS) + (i * WIDTH / NUM_ITEM_SLOTS), HEIGHT - 80));
@@ -268,6 +271,14 @@ function update () {
 function updateUI () {
   for (var i = 0; i < NUM_ITEM_SLOTS; i++) {
     itemUIButtons[i].updateGFX();
+  }
+  if (player) {
+    uiHoneyBar.clear();
+    // set a fill and line style
+    uiHoneyBar.beginFill(0xFF3300);
+    uiHoneyBar.lineStyle(3, 0xffd900, 1);
+    var width = (WIDTH - 20) * player.flightTimeLeft / (30 * 60);
+    uiHoneyBar.drawRect(10, HEIGHT - 20, width, 10);
   }
 
   if (!game.input.activePointer.isDown) {

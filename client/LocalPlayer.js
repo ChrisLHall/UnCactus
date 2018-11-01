@@ -15,6 +15,7 @@ var LocalPlayer = function (playerID, group, startX, startY, playerInfo) {
 
   this.targetPos = new Phaser.Point(startX, startY)
   this.lerpSpeed = 5
+  this.flightTimeLeft = 30 * 60;
 
   this.targetPlanetObj = null
   this.sittingOnPlanetObj = null
@@ -105,8 +106,12 @@ LocalPlayer.prototype.update = function () {
       this.targetPlanet(null)
     }
   }
+  // TODO block this (or re-targeting) with flightTimeLeft
   this.gameObj.x += delta.x
   this.gameObj.y += delta.y
+  if (Math.abs(delta.x) + Math.abs(delta.y) > 1) {
+    this.flightTimeLeft--;
+  }
 
   if (null !== this.sittingOnPlanetObj) {
     this.gameObj.angle += this.sittingOnPlanetObj.info.rotSpeed
