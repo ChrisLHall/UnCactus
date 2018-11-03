@@ -15,10 +15,10 @@ var LocalPlayer = function (playerID, group, startX, startY, playerInfo) {
 
   this.targetPos = new Phaser.Point(startX, startY)
   this.lerpSpeed = 5
-  this.flightTimeLeft = 30 * 60;
+  this.flightTimeLeft = MAX_ENERGY;
 
-  this.targetPlanetObj = null
-  this.sittingOnPlanetObj = null
+  this.targetPlanetObj = null;
+  this.sittingOnPlanetObj = null;
 
   // Item slot we're about to use
   this.selectedItemSlot = null;
@@ -84,7 +84,7 @@ LocalPlayer.prototype.exists = function () {
 LocalPlayer.prototype.update = function () {
   //  only move when you click
   var clickPoint = new Phaser.Point(game.input.activePointer.worldX, game.input.activePointer.worldY)
-  if (!clickUsedByUI && game.input.activePointer.isDown
+  if (!clickUsedByUI && this.flightTimeLeft > 0 && game.input.activePointer.isDown
       && game.input.activePointer.duration > 50
       && Phaser.Point.subtract(clickPoint, this.gameObj.position)
       .getMagnitude() > 70) {
@@ -106,15 +106,18 @@ LocalPlayer.prototype.update = function () {
       this.targetPlanet(null)
     }
   }
-  // TODO block this (or re-targeting) with flightTimeLeft
   this.gameObj.x += delta.x
   this.gameObj.y += delta.y
-  if (Math.abs(delta.x) + Math.abs(delta.y) > 1) {
+
+  if (Math.abs(delta.x) + Math.abs(delta.y) > 1 && this.flightTimeLeft > 0) {
     this.flightTimeLeft--;
   }
 
   if (null !== this.sittingOnPlanetObj) {
     this.gameObj.angle += this.sittingOnPlanetObj.info.rotSpeed
+    if (this.sittingOnPlanetObj.info.owner === this.playerID && this.flightTimeLeft < MAX_ENERGY) {
+      this.flightTimeLeft += 5;
+    }
   } else {
     // cannot select items for use if you are flying around
     this.selectedItemSlot = null;

@@ -431,6 +431,10 @@ function onUseItem (data) {
         planetChanged = true;
       }
     }
+  } else if (invSlot === "honey") {
+    // always use honey
+    itemUsed = true;
+    this.emit('used honey', {});
   }
   if (itemUsed) {
     player.info.inventory[data.slot] = null;

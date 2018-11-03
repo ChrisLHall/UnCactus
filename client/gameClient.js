@@ -31,6 +31,7 @@ var spaceFG
 
 var player = null;
 var localPlayerID = null;
+var MAX_ENERGY = 15 * 60;
 // The base of our player
 var startX = -2000 + 6000 * Math.random();
 var startY = -2000 + 6000 * Math.random();
@@ -133,8 +134,9 @@ function setEventHandlers () {
   socket.on('update planet info', onUpdatePlanetInfo)
   socket.on('update all planets', onUpdateAllPlanets)
 
-  socket.on('shout', onShout)
-  socket.on('chat message', onReceiveChat)
+  socket.on('shout', onShout);
+  socket.on('chat message', onReceiveChat);
+  socket.on('used honey', onUsedHoney);
 }
 
 // Socket connected
@@ -298,7 +300,7 @@ function updateUI () {
     // set a fill and line style
     uiHoneyBar.beginFill(0xFF3300);
     uiHoneyBar.lineStyle(3, 0xffd900, 1);
-    var width = (WIDTH - 20) * player.flightTimeLeft / (30 * 60);
+    var width = (WIDTH - 20) * player.flightTimeLeft / MAX_ENERGY;
     uiHoneyBar.drawRect(10, HEIGHT - 20, width, 10);
   }
 
@@ -341,4 +343,10 @@ function findHomePlanet (playerID) {
 // TEMP CHAT SYSTEM
 function onReceiveChat(msg) {
     //$('#messages').prepend($('<li>').text(msg));
+}
+
+function onUsedHoney(_) {
+  if (player) {
+    player.flightTimeLeft += MAX_ENERGY;
+  }
 }
