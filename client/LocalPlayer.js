@@ -95,9 +95,10 @@ LocalPlayer.prototype.update = function () {
   }
 
   var delta = Phaser.Point.subtract(this.targetPos, this.gameObj.position)
-  if (delta.getMagnitude() > this.lerpSpeed) {
+  var speed = LocalPlayer.BASE_SPEED * this.speedMultiplier();
+  if (delta.getMagnitude() > speed) {
     delta.normalize()
-    delta.multiply(this.lerpSpeed, this.lerpSpeed)
+    delta.multiply(speed, speed)
     this.gameObj.angle = Math.atan2(delta.y, delta.x) * Phaser.Math.RAD_TO_DEG
   } else {
     // arrived
@@ -110,13 +111,13 @@ LocalPlayer.prototype.update = function () {
   this.gameObj.y += delta.y
 
   if (Math.abs(delta.x) + Math.abs(delta.y) > 1 && this.flightTimeLeft > 0) {
-    this.flightTimeLeft--;
+    this.flightTimeLeft -= this.speedMultiplier();
   }
 
   if (null !== this.sittingOnPlanetObj) {
     this.gameObj.angle += this.sittingOnPlanetObj.info.rotSpeed
     if (this.sittingOnPlanetObj.info.owner === this.playerID && this.flightTimeLeft < MAX_ENERGY) {
-      this.flightTimeLeft += 5;
+      this.flightTimeLeft = Math.min(this.flightTimeLeft + 5, MAX_ENERGY);
     }
   } else {
     // cannot select items for use if you are flying around
@@ -125,6 +126,12 @@ LocalPlayer.prototype.update = function () {
   if (null !== this.selectedItemSlot && !this.info.inventory[this.selectedItemSlot]) {
     this.selectedItemSlot = null;
   }
+}
+
+LocalPlayer.BASE_SPEED = 5;
+
+LocalPlayer.prototype.speedMultiplier = function () {
+  return CommonUtil.clamp(Math.ceil(this.flightTimeLeft / MAX_ENERGY), 1, 3);
 }
 
 LocalPlayer.prototype.distance = function (otherGameObj) {

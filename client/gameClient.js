@@ -297,10 +297,26 @@ function updateUI () {
   }
   if (player) {
     uiHoneyBar.clear();
+    // fill 1
+    var fill1 = CommonUtil.clamp(player.flightTimeLeft / MAX_ENERGY, 0, 1);
     // set a fill and line style
-    uiHoneyBar.beginFill(0xFF3300);
-    uiHoneyBar.lineStyle(3, 0xffd900, 1);
-    var width = (WIDTH - 20) * player.flightTimeLeft / MAX_ENERGY;
+    uiHoneyBar.beginFill(0xFFdf00);
+    uiHoneyBar.lineStyle(3, 0xffdfaf, 1);
+    var width = (WIDTH - 20) * fill1;
+    uiHoneyBar.drawRect(10, HEIGHT - 20, width, 10);
+    // fill 2
+    var fill2 = CommonUtil.clamp((player.flightTimeLeft - MAX_ENERGY) / MAX_ENERGY, 0, 1);
+    // set a fill and line style
+    uiHoneyBar.beginFill(0xffaf00);
+    uiHoneyBar.lineStyle(3, 0xffaf8f, 1);
+    var width = (WIDTH - 20) * fill2;
+    uiHoneyBar.drawRect(10, HEIGHT - 20, width, 10);
+    // fill 3
+    var fill3 = CommonUtil.clamp((player.flightTimeLeft - 2 * MAX_ENERGY) / MAX_ENERGY, 0, 1);
+    // set a fill and line style
+    uiHoneyBar.beginFill(0xaf00ff);
+    uiHoneyBar.lineStyle(3, 0xaf8fff, 1);
+    var width = (WIDTH - 20) * fill3;
     uiHoneyBar.drawRect(10, HEIGHT - 20, width, 10);
   }
 
