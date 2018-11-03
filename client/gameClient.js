@@ -29,10 +29,11 @@ var socket // Socket connection
 var spaceBG
 var spaceFG
 
-var player
+var player = null;
+var localPlayerID = null;
 // The base of our player
-var startX = 0
-var startY = 0
+var startX = -2000 + 6000 * Math.random();
+var startY = -2000 + 6000 * Math.random();
 
 var glob = {
   currentServerTick: 0,
@@ -102,7 +103,7 @@ function onShout (data) {
 }
 
 function clickGoHome () {
-  if (null != player) {
+  if (null !== player) {
     var goto = findHomePlanet(player.playerID)
     if (null !== goto) {
       player.teleportToPlanet(goto)
@@ -154,12 +155,27 @@ function onConfirmID (data) {
   console.log("confirmed my ID: " + data.playerID)
   window.localStorage.setItem("preferredID", data.playerID)
 
-  player = new LocalPlayer(data.playerID, playerGroup, startX, startY, Player.generateNewInfo(data.playerID))
-
-  game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_LOCKON, 0.3, 0.3)
-  game.camera.focusOnXY(startX, startY)
+  localPlayerID = data.playerID;
+  //setupLocalPlayer(localPlayerID);
 
   socket.emit("query all planets", {});
+}
+
+function setupLocalPlayer (playerID) {
+  var home = findHomePlanet(playerID);
+  if (home) {
+    startX = home.gameObj.x;
+    startY = home.gameObj.y;
+  }
+
+  player = new LocalPlayer(playerID, playerGroup, startX, startY, Player.generateNewInfo(playerID));
+
+  if (home) {
+    player.teleportToPlanet(home);
+  }
+
+  game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_LOCKON, 0.3, 0.3);
+  game.camera.focusOnXY(startX, startY);
 }
 
 // New player
@@ -233,6 +249,11 @@ function onUpdatePlanetInfo (data) {
 function onUpdateAllPlanets (data) {
   for (var i = 0; i < data.length; i++) {
     onUpdatePlanetInfo(data[i]);
+  }
+
+  if (!player) {
+    // setup the player here to put them on their home planet hopefully
+    setupLocalPlayer(localPlayerID);
   }
 }
 
@@ -310,7 +331,6 @@ function planetByID (planetID) {
 
 function findHomePlanet (playerID) {
   for (var i = 0; i < glob.planets.length; i++) {
-    console.log(glob.planets[i])
     if (glob.planets[i].info.owner === playerID) {
       return glob.planets[i]
     }
