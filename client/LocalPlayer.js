@@ -135,14 +135,4 @@ LocalPlayer.prototype.speedMultiplier = function () {
   return CommonUtil.clamp(Math.ceil(this.flightTimeLeft / MAX_ENERGY), 1, 3);
 }
 
-LocalPlayer.prototype.distance = function (otherGameObj) {
-  var dx = this.gameObj.x - otherGameObj.x;
-  var dy = this.gameObj.y - otherGameObj.y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-LocalPlayer.prototype.taxiDistance = function (otherGameObj) {
-  return Math.max(Math.abs(this.gameObj.x - otherGameObj.x), Math.abs(this.gameObj.y - otherGameObj.y));
-}
-
 window.LocalPlayer = LocalPlayer

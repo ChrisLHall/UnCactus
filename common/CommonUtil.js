@@ -16,6 +16,10 @@
     return Math.max(min, Math.min(max, x));
   }
 
+  CommonUtil.withinXY = function(pos1, pos2, xDist, yDist) {
+    return Math.abs(pos1.x - pos2.x) <= xDist && Math.abs(pos1.y - pos2.y) <= yDist;
+  }
+
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
     module.exports = CommonUtil
   else

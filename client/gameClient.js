@@ -52,6 +52,9 @@ var itemUIButtons = [];
 var homePlanetButtons = [];
 var NUM_ITEM_SLOTS = 6;
 
+var planetObjs = {};
+var otherPlayerObjs = {};
+
 var uiText
 var uiHoneyBar = null;
 var clickUsedByUI = false
@@ -275,7 +278,7 @@ function update () {
   }
   for (var i = 0; i < glob.planets.length; i++) {
     var planet = glob.planets[i];
-    if (player && player.taxiDistance(planet.gameObj) < 700) {
+    if (player && CommonUtil.withinXY(player.gameObj, planet.gameObj, 400, 700)) {
       glob.planets[i].update();
     }
   }
