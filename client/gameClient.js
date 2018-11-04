@@ -5,18 +5,21 @@ var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'gameContainer',
     { preload: preload, create: create, update: update, render: render })
 
 function preload () {
-  game.load.image('planet', 'assets/images/planet.png')
+  game.load.image('planet', 'assets/images/planet.png');
 
-  game.load.image('spaceBG', 'assets/images/starfield.png')
-  game.load.image('spaceFG', 'assets/images/dustfield.png')
-  game.load.image('shout', 'assets/images/shout.png')
-  game.load.image('pressshout', 'assets/images/pressShout.png')
-  game.load.image('gohome', 'assets/images/gohome.png')
+  game.load.image('spaceBG', 'assets/images/starfield.png');
+  game.load.image('spaceFG', 'assets/images/dustfield.png');
+  game.load.image('shout', 'assets/images/shout.png');
+  game.load.image('pressshout', 'assets/images/pressShout.png');
+  game.load.image('gohome', 'assets/images/gohome.png');
 
   game.load.spritesheet('empty', 'assets/images/empty_sheet.png', 190, 190);
   game.load.spritesheet('cactus1', 'assets/images/cactus1_sheet.png', 190, 190);
+  game.load.spritesheet('cactus2', 'assets/images/cactus2_sheet.png', 190, 190);
+  game.load.spritesheet('cactus3', 'assets/images/cactus3_sheet.png', 190, 190);
 
-  game.load.spritesheet('beehives', 'assets/images/beehives.png', 96, 96);
+  game.load.spritesheet('beehive', 'assets/images/beehive.png', 96, 96);
+  game.load.spritesheet('emptybeehive', 'assets/images/emptybeehive.png', 96, 96);
   game.load.spritesheet('playerbee', 'assets/images/bigbee.png', 64, 64);
   game.load.spritesheet('items', 'assets/images/items.png', 64, 64);
   game.load.spritesheet('itemsUI', 'assets/images/itemsUI.png', 64, 64);
@@ -64,7 +67,7 @@ function create () {
   setEventHandlers()
 
   game.physics.startSystem(Phaser.Physics.ARCADE)
-  game.world.setBounds(-2000, -2000, 4000, 4000)
+  game.world.setBounds(-10000, -10000, 20000, 20000)
 
   // Our tiled scrolling background
   spaceBG = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'spaceBG')

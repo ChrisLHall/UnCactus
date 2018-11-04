@@ -152,9 +152,9 @@ function processPlanets () {
     var planetSlots = planet.info.slots
     var changed = false
     // ensure there is a beehive on home planets
-    if (planet.info.owner && planetSlots[0].type !== "beehives") {
+    if (planet.info.owner && planetSlots[0].type !== "beehive") {
       console.log("Adding a beehive to " + planet.planetID);
-      planetSlots[0].type = "beehives";
+      planetSlots[0].type = "beehive";
       planetSlots[0].birthTick = metadata['serverTicks'];
       planetSlots[0].nectar = 0;
       changed = true;
@@ -183,7 +183,7 @@ function processPlanets () {
             slot.itemAvailable = "nectar";
           }
           // when a plant flowers, add 1 nectar
-          var beehiveSlotIdx = Planet.findSlotOfType(planetSlots, "beehives");
+          var beehiveSlotIdx = Planet.findSlotOfType(planetSlots, "beehive");
           if (null !== beehiveSlotIdx) {
             var beehiveSlot = planetSlots[beehiveSlotIdx];
             beehiveSlot.nectar = beehiveSlot.nectar || 0;
@@ -203,7 +203,7 @@ function processPlanets () {
             changed = true;
           }
         }
-      } else if (slot.type === "beehives") {
+      } else if (slot.type === "beehive") {
         // TODO come up with a good way to ensure the right properties
         slot.nectar = slot.nectar || 0;
         if (!slot.itemAvailable && slot.nectar >= 5) {
@@ -423,7 +423,7 @@ function onUseItem (data) {
       planetChanged = true;
     }
   } else if (invSlot === "nectar" && planetSlot) {
-    if (planetSlot.type === "beehives") {
+    if (planetSlot.type === "beehive") {
       planetSlot.nectar = planetSlot.nectar || 0;
       if (planetSlot.nectar < 10) {
         planetSlot.nectar++;
@@ -482,14 +482,14 @@ function onQueryAllPlanets (_) {
 
 function createHomePlanet(playerID) {
   var planet = new Planet(uuidv4())
-  var planetInfo = Planet.generateNewInfo(planet.planetID, -1800 + Math.random() * 3600, -1800 + Math.random() * 3600, playerID)
+  var planetInfo = Planet.generateNewInfo(planet.planetID, -9500 + Math.random() * 19000, -9500 + Math.random() * 19000, playerID)
   planet.info = planetInfo
   return planet
 }
 
 function createEmptyPlanet() {
   var planet = new Planet(uuidv4())
-  var planetInfo = Planet.generateNewInfo(planet.planetID, -1800 + Math.random() * 3600, -1800 + Math.random() * 3600, null)
+  var planetInfo = Planet.generateNewInfo(planet.planetID, -9500 + Math.random() * 19000, -9500 + Math.random() * 19000, null)
   planet.info = planetInfo
   return planet
 }
