@@ -43,8 +43,10 @@ var startY = 0;
 var glob = {
   currentServerTick: 0,
   intermittents: [],
-  otherPlayers: [],
-  planets: [],
+  otherPlayers: {},
+  otherPlayerObjs: {},
+  planets: {},
+  planetObjs: {},
   shouts: []
 }
 window.glob = glob;
@@ -52,8 +54,6 @@ var itemUIButtons = [];
 var homePlanetButtons = [];
 var NUM_ITEM_SLOTS = 6;
 
-var planetObjs = {};
-var otherPlayerObjs = {};
 
 var uiText
 var uiHoneyBar = null;
@@ -188,7 +188,7 @@ function onNewPlayer (data) {
 
   // Add new player to the remote players array
   var remote = new RemotePlayer(data.playerID, playerGroup, data.x, data.y, data.info);
-  glob.otherPlayers.push(remote)
+  glob.otherPlayers[data.playerID] = remote;
 }
 
 // Move player
@@ -218,8 +218,11 @@ function onRemovePlayer (data) {
   playerGroup.remove(removePlayer.gameObj)
   removePlayer.gameObj.kill()
 
+  // TODO ALSO REMOVE IT FROM THE ARRAY OF INSTANCES
   // Remove player from array
-  glob.otherPlayers.splice(glob.otherPlayers.indexOf(removePlayer), 1)
+  if (glob.otherPlayers.hasOwnProperty(data.playerID)) {
+    delete glob.otherPlayers[data.playerID];
+  }
 }
 
 function onServerTick (data) {
@@ -273,8 +276,10 @@ function update () {
         i--;
     }
   }
-  for (var i = 0; i < glob.otherPlayers.length; i++) {
-    glob.otherPlayers[i].update();
+  for (var playerID in glob.otherPlayers) {
+    if (glob.otherPlayers.hasOwnProperty(playerID)) {
+      glob.otherPlayers[playerID].update();
+    }
   }
   for (var i = 0; i < glob.planets.length; i++) {
     var planet = glob.planets[i];
@@ -335,12 +340,10 @@ function render () {
 }
 
 function playerByID (playerID) {
-  for (var i = 0; i < glob.otherPlayers.length; i++) {
-    if (glob.otherPlayers[i].playerID === playerID) {
-      return glob.otherPlayers[i]
-    }
+  if (glob.otherPlayers.hasOwnProperty(playerID)) {
+    return glob.otherPlayers[i];
   }
-  return null
+  return null;
 }
 
 function planetByID (planetID) {
