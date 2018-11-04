@@ -151,14 +151,6 @@ function processPlanets () {
     var planet = planets[planetIdx]
     var planetSlots = planet.info.slots
     var changed = false
-    // ensure there is a beehive on home planets
-    if (planet.info.owner && planetSlots[0].type !== "beehive") {
-      console.log("Adding a beehive to " + planet.planetID);
-      planetSlots[0].type = "beehive";
-      planetSlots[0].birthTick = metadata['serverTicks'];
-      planetSlots[0].nectar = 0;
-      changed = true;
-    }
     for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
       var slot = planetSlots[slotIdx]
       var age = metadata.serverTicks - slot.birthTick
@@ -493,15 +485,15 @@ function onDestroyBeehive (data) {
   if (planet && planet.info.owner === player.playerID) {
     var planetSlots = planet.info.slots;
     for (var i = 0; i < planetSlots.length; i++) {
-      var slot = planetSlots[i];
-      if (slot.type === "beehive") {
+      var planetSlot = planetSlots[i];
+      if (planetSlot.type === "beehive") {
         planetSlot.type = "emptybeehive";
         planetSlot.birthTick = metadata.serverTicks;
         planetSlot.itemAvailable = null;
         planetSlot.pollinatedType = null;
       }
     }
-    planet.owner = null;
+    planet.info.owner = null;
     setPlanetInfo(planet);
   }
 }
@@ -533,6 +525,10 @@ function createHomePlanet(playerID) {
   var planet = new Planet(uuidv4())
   var planetInfo = Planet.generateNewInfo(planet.planetID, -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), playerID);
   planet.info = planetInfo
+  planetSlot = planet.info.slots[Math.floor(6 * Math.random())];
+  planetSlot.type = "beehive";
+  planetSlot.birthTick = metadata.serverTicks;
+  planetSlot.nectar = 0;
   return planet
 }
 

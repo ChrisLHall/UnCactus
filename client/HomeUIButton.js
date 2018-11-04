@@ -46,13 +46,19 @@ HomeUIButton.prototype.onClickDelete = function(pointer) {
   if (!player) {
     return;
   }
+  console.log("on click delete");
 
   var homePlanets = findHomePlanets(player.playerID);
   var available = homePlanets.length > this.homeUIButton.homeIdx;
   var moreThan1 = homePlanets.length > 1;
   var sittingOn = available && player.sittingOnPlanetObj === homePlanets[this.homeUIButton.homeIdx];
+  console.log(homePlanets);
+  console.log(available);
+  console.log(moreThan1);
+  console.log(sittingOn);
 
   if (available && moreThan1 && sittingOn) {
-    socket.emit('destroy beehive', {targetPlanet: homePlanets[this.homeUIButton.homeIdx]});
+    console.log("Socket emit");
+    socket.emit('destroy beehive', {targetPlanet: homePlanets[this.homeUIButton.homeIdx].planetID});
   }
 }
