@@ -2,7 +2,7 @@ var WIDTH = 540
 var HEIGHT = 960
 var WORLD_SIZE = 10000; // also in the server
 
-var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'gameContainer',
+var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.CANVAS, 'gameContainer',
     { preload: preload, create: create, update: update, render: render })
 
 function preload () {
@@ -275,7 +275,7 @@ function update () {
   }
   for (var i = 0; i < glob.planets.length; i++) {
     var planet = glob.planets[i];
-    if (player && player.distance(planet.gameObj) < 700) {
+    if (player && player.taxiDistance(planet.gameObj) < 700) {
       glob.planets[i].update();
     }
   }

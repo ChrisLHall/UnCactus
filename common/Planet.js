@@ -35,8 +35,6 @@
   Planet.findSlotOfType = function (planetSlots, type) {
     for (var i = 0; i < planetSlots.length; i++) {
       if (planetSlots[i].type === type) {
-        // TODO does it work at all
-        console.log("Found slot of type " + type);
         return i;
       }
     }

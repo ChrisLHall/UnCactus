@@ -21,7 +21,7 @@
     return type.startsWith("cactus");
   }
 
-  Cactus.GROWTH_AGES = [0, 4, 10, 18];
+  Cactus.GROWTH_AGES = [0, 4, 10, 25];
 
   Cactus.EMPTY_SPAWN_TIME = 20
   Cactus.SPAWN_CHANCE = .005

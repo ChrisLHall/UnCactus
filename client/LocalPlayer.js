@@ -141,4 +141,8 @@ LocalPlayer.prototype.distance = function (otherGameObj) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+LocalPlayer.prototype.taxiDistance = function (otherGameObj) {
+  return Math.max(Math.abs(this.gameObj.x - otherGameObj.x), Math.abs(this.gameObj.y - otherGameObj.y));
+}
+
 window.LocalPlayer = LocalPlayer

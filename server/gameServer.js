@@ -182,7 +182,6 @@ function processPlanets () {
             beehiveSlot.nectar += 1;
             beehiveSlot.honeyCombCounter = beehiveSlot.honeyCombCounter || 0;
             beehiveSlot.honeyCombCounter += 1;
-            console.log("added nectar automatically");
           }
           changed = true;
         } else if (age === Cactus.GROWTH_AGES[3]) {
@@ -681,7 +680,7 @@ function setPlanetInfo(planet) {
     io.emit('update planet info', planet.info);
   }).catch(function (error) {
     var errorString = "" + error.code + ": " + error.message
-    console.log(playerID + ": Unable to create planet info: " + errorString);
+    console.log(planet.planetID + ": Unable to create planet info: " + errorString);
   });
 }
 
