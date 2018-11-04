@@ -43,7 +43,8 @@ LocalPlayer.prototype.updateInventoryGFX = function () {
 }
 
 LocalPlayer.prototype.targetPlanet = function (planet) {
-  if (null != planet && this.flightTimeLeft > 0) {
+  if (planet && this.flightTimeLeft > 0) {
+    this.sittingOnPlanetObj = null;
     this.targetPos = planet.gameObj.position
     this.targetPlanetObj = planet
   } else {
@@ -128,7 +129,7 @@ LocalPlayer.prototype.update = function () {
   }
 }
 
-LocalPlayer.BASE_SPEED = 5;
+LocalPlayer.BASE_SPEED = 3;
 
 LocalPlayer.prototype.speedMultiplier = function () {
   return CommonUtil.clamp(Math.ceil(this.flightTimeLeft / MAX_ENERGY), 1, 3);

@@ -20,11 +20,11 @@ var rl = readline.createInterface({
   output: process.stdout
 });
 
-var port = process.env.PORT || 4545
+var port = process.env.PORT || 4545;
+var WORLD_SIZE = 10000; // also in the client
 
 var players = []	// Array of connected players
 var planets = []// Array of planets
-var currentPlanetIdx = 0 // checking for modified planets
 
 var BUCKET_SUFFIX = "";
 
@@ -282,6 +282,7 @@ function onSocketConnection (client) {
   client.on('collect item', onCollectItem);
   client.on('use item', onUseItem);
   client.on('delete item', onDeleteItem);
+  client.on('destroy beehive', onDestroyBeehive);
 
   client.on('shout', onShout)
   // TEMP chat
@@ -434,8 +435,10 @@ function onUseItem (data) {
   } else if (invSlot === "nectar" && planetSlot) {
     if (planetSlot.type === "beehive") {
       planetSlot.nectar = planetSlot.nectar || 0;
+      planetSlot.honeyCombCounter = planetSlot.honeyCombCounter || 0;
       if (planetSlot.nectar < 10) {
-        planetSlot.nectar++;
+        planetSlot.nectar += 1;
+        planetSlot.honeyCombCounter += 1;
         itemUsed = true;
         planetChanged = true;
       }
@@ -444,6 +447,16 @@ function onUseItem (data) {
     // always use honey
     itemUsed = true;
     this.emit('used honey', {});
+  } else if (invSlot === "honeycomb" && planetSlot) {
+    if (planetSlot.type === "emptybeehive") {
+      planetSlot.type = "beehive";
+      planetSlot.birthTick = metadata.serverTicks;
+      planetSlot.itemAvailable = null;
+      planetSlot.pollinatedType = null; // todo there must be a better way to reset this shite
+      planet.info.owner = player.playerID;
+      itemUsed = true;
+      planetChanged = true;
+    }
   }
   if (itemUsed) {
     player.info.inventory[data.slot] = null;
@@ -454,7 +467,8 @@ function onUseItem (data) {
   }
 }
 
-function onDeleteItem (data) {var player = playerBySocket(this);
+function onDeleteItem (data) {
+  var player = playerBySocket(this);
   var invSlot = player.info.inventory[data.slot];
   if (!player) {
     console.log("unable to delete item: " + player.toString());
@@ -463,6 +477,32 @@ function onDeleteItem (data) {var player = playerBySocket(this);
   if (invSlot) {
     player.info.inventory[data.slot] = null;
     setPlayerInfo(player);
+  }
+}
+
+function onDestroyBeehive (data) {
+  var player = playerBySocket(this);
+  if (!player) {
+    console.log("unable destroy beehive: " + player.toString());
+  }
+  var planet = null;
+  if (data.targetPlanet) {
+    planet = planetByID(data.targetPlanet);
+  }
+
+  if (planet && planet.info.owner === player.playerID) {
+    var planetSlots = planet.info.slots;
+    for (var i = 0; i < planetSlots.length; i++) {
+      var slot = planetSlots[i];
+      if (slot.type === "beehive") {
+        planetSlot.type = "emptybeehive";
+        planetSlot.birthTick = metadata.serverTicks;
+        planetSlot.itemAvailable = null;
+        planetSlot.pollinatedType = null;
+      }
+    }
+    planet.owner = null;
+    setPlanetInfo(planet);
   }
 }
 
@@ -491,14 +531,14 @@ function onQueryAllPlanets (_) {
 
 function createHomePlanet(playerID) {
   var planet = new Planet(uuidv4())
-  var planetInfo = Planet.generateNewInfo(planet.planetID, -9500 + Math.random() * 19000, -9500 + Math.random() * 19000, playerID)
+  var planetInfo = Planet.generateNewInfo(planet.planetID, -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), playerID);
   planet.info = planetInfo
   return planet
 }
 
 function createEmptyPlanet() {
   var planet = new Planet(uuidv4())
-  var planetInfo = Planet.generateNewInfo(planet.planetID, -9500 + Math.random() * 19000, -9500 + Math.random() * 19000, null)
+  var planetInfo = Planet.generateNewInfo(planet.planetID, -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), null);
   planet.info = planetInfo
   // Sometimes create an empty beehive
   if (Math.random() < .3) {
@@ -564,8 +604,8 @@ function setPlayerInfo(player) {
 }
 
 function ensureHomePlanet (player) {
-  var homePlanet = findHomePlanet(player.playerID);
-  if (!homePlanet) {
+  var homePlanets = findHomePlanets(player.playerID);
+  if (homePlanets.length <= 0) {
     console.log("Creating home planet for " + player.playerID);
     homePlanet = createHomePlanet(player.playerID)
     planets.push(homePlanet)
@@ -680,16 +720,6 @@ function planetByID (planetID) {
   return null;
 }
 
-// TODO remove the singular findhomeplanet
-function findHomePlanet (playerID) {
-  for (var i = 0; i < planets.length; i++) {
-    if (planets[i].info.owner === playerID) {
-      return planets[i];
-    }
-  }
-  return null;
-}
-
 function findHomePlanets (playerID) {
   var result = []
   for (var i = 0; i < planets.length; i++) {
@@ -697,5 +727,6 @@ function findHomePlanets (playerID) {
       result.push(planets[i]);
     }
   }
+  result.sort(function (a,b) {return a.planetID.localeCompare(b.planetID);});
   return result;
 }

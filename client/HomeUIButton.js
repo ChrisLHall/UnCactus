@@ -5,7 +5,7 @@ var HomeUIButton = function (group, homeIdx, screenX, screenY) {
   this.button = new UIButton(group, "gohome", 0, screenX, screenY, this.onClick);
   this.button.homeUIButton = this; // gotta have a reference to this
   this.button.gameObj.animations.play("0")
-  this.deleteButton = new UIButton(group, "itemsUI", 4, screenX, screenY + 100, this.onClickDelete);
+  this.deleteButton = new UIButton(group, "itemsUI", 4, screenX, screenY + 70, this.onClickDelete);
   this.deleteButton.homeUIButton = this;
 
   this.updateGFX();
@@ -15,12 +15,17 @@ HomeUIButton.prototype.updateGFX = function () {
   if (!player) {
     return;
   }
-
-  // TODO fade out if there isn't an available planet for it
-  // TODO get a list of home planets
-  var selected = (player.sittingOnPlanetObj === this.slot);
-
-  this.deleteButton.gameObj.visible = selected;
+  var homePlanets = findHomePlanets(player.playerID);
+  var available = homePlanets.length > this.homeIdx;
+  var moreThan1 = homePlanets.length > 1;
+  var sittingOn = available && player.sittingOnPlanetObj === homePlanets[this.homeIdx];
+  this.button.gameObj.alpha = available ? 1 : .5;
+  if (sittingOn) {
+    this.button.gameObj.tint = 0xdfffdf;
+  } else {
+    this.button.gameObj.tint = 0xffffff;
+  }
+  this.deleteButton.gameObj.visible = moreThan1 && available && sittingOn;
 }
 
 HomeUIButton.prototype.onClick = function(pointer) {
@@ -29,21 +34,11 @@ HomeUIButton.prototype.onClick = function(pointer) {
     return;
   }
 
-  // TODO first check if we should select/deselect this item
-  /*
-  if (player.selectedItemSlot === this.homeUIButton.slot) {
-    player.selectedItemSlot = null;
-  } else {
-    if (player.itemRequiresTarget(this.homeUIButton.slot)) {
-      player.selectedItemSlot = this.homeUIButton.slot;
-    } else {
-      socket.emit('use item', { slot: this.homeUIButton.slot, targetPlanet: null, targetSlot: null });
-      player.selectedItemSlot = null;
-    }
+  var homePlanets = findHomePlanets(player.playerID);
+  var available = homePlanets.length > this.homeUIButton.homeIdx;
+  if (available) {
+      player.teleportToPlanet(homePlanets[this.homeUIButton.homeIdx]);
   }
-  
-  player.updateInventoryGFX();
-  */
 }
 
 HomeUIButton.prototype.onClickDelete = function(pointer) {
@@ -51,10 +46,13 @@ HomeUIButton.prototype.onClickDelete = function(pointer) {
   if (!player) {
     return;
   }
-  /*
-  var selected = (player.selectedItemSlot === this.homeUIButton.slot);
-  if (selected) {
-    socket.emit('delete item', { slot: this.homeUIButton.slot });
+
+  var homePlanets = findHomePlanets(player.playerID);
+  var available = homePlanets.length > this.homeUIButton.homeIdx;
+  var moreThan1 = homePlanets.length > 1;
+  var sittingOn = available && player.sittingOnPlanetObj === homePlanets[this.homeUIButton.homeIdx];
+
+  if (available && moreThan1 && sittingOn) {
+    socket.emit('destroy beehive', {targetPlanet: homePlanets[this.homeUIButton.homeIdx]});
   }
-  */
 }

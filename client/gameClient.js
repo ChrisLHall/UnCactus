@@ -1,5 +1,6 @@
 var WIDTH = 540
 var HEIGHT = 960
+var WORLD_SIZE = 10000; // also in the server
 
 var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'gameContainer',
     { preload: preload, create: create, update: update, render: render })
@@ -34,7 +35,7 @@ var spaceFG
 
 var player = null;
 var localPlayerID = null;
-var MAX_ENERGY = 15 * 60;
+var MAX_ENERGY = 20 * 60;
 // The base of our player
 var startX = 0;
 var startY = 0;
@@ -48,6 +49,7 @@ var glob = {
 }
 window.glob = glob;
 var itemUIButtons = [];
+var homePlanetButtons = [];
 var NUM_ITEM_SLOTS = 6;
 
 var uiText
@@ -62,18 +64,18 @@ function create () {
   game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
   // TODO remove for release????
   game.stage.disableVisibilityChange = true;
-  socket = io.connect()
+  socket = io.connect();
   // Start listening for events
-  setEventHandlers()
+  setEventHandlers();
 
-  game.physics.startSystem(Phaser.Physics.ARCADE)
-  game.world.setBounds(-10000, -10000, 20000, 20000)
+  game.physics.startSystem(Phaser.Physics.ARCADE);
+  game.world.setBounds(-WORLD_SIZE / 2, -WORLD_SIZE / 2, WORLD_SIZE, WORLD_SIZE);
 
   // Our tiled scrolling background
-  spaceBG = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'spaceBG')
-  spaceBG.fixedToCamera = true
-  spaceFG = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'spaceFG')
-  spaceFG.fixedToCamera = true
+  spaceBG = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'spaceBG');
+  spaceBG.fixedToCamera = true;
+  spaceFG = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'spaceFG');
+  spaceFG.fixedToCamera = true;
 
   tileGroup = game.add.group();
   itemGroup = game.add.group();
@@ -86,7 +88,9 @@ function create () {
   uiGroup.fixedToCamera = true
 
   uiText = new UIButton(uiGroup, "pressshout", 0, 220, 80, clickShout);
-  uiText = new UIButton(uiGroup, "gohome", 0, 320, 80, clickGoHome);
+  for (var i = 0; i < 3; i++) {
+    homePlanetButtons.push(new HomeUIButton(uiGroup, i, 320 + 80 * i, 80));
+  }
   uiHoneyBar = game.add.graphics(0, 0);
   uiGroup.add(uiHoneyBar);
 
@@ -104,15 +108,6 @@ function clickShout () {
 function onShout (data) {
   var shout = new Shout(data.playerID)
   glob.shouts.push(shout)
-}
-
-function clickGoHome () {
-  if (null !== player) {
-    var goto = findHomePlanet(player.playerID)
-    if (null !== goto) {
-      player.teleportToPlanet(goto)
-    }
-  }
 }
 
 function setEventHandlers () {
@@ -167,7 +162,8 @@ function onConfirmID (data) {
 }
 
 function setupLocalPlayer (playerID) {
-  var home = findHomePlanet(playerID);
+  var homePlanets = findHomePlanets(playerID);
+  var home = homePlanets.length > 0 ? homePlanets[0] : null;
   if (home) {
     startX = home.gameObj.x;
     startY = home.gameObj.y;
@@ -298,6 +294,9 @@ function updateUI () {
   for (var i = 0; i < NUM_ITEM_SLOTS; i++) {
     itemUIButtons[i].updateGFX();
   }
+  for (var i = 0; i < 3; i++) {
+    homePlanetButtons[i].updateGFX();
+  }
   if (player) {
     uiHoneyBar.clear();
     // fill 1
@@ -349,23 +348,15 @@ function planetByID (planetID) {
   }
   return null
 }
-// TODO remove the singular find home planet
-function findHomePlanet (playerID) {
-  for (var i = 0; i < glob.planets.length; i++) {
-    if (glob.planets[i].info.owner === playerID) {
-      return glob.planets[i]
-    }
-  }
-  return null
-}
 
 function findHomePlanets (playerID) {
-  var result = []
+  var result = [];
   for (var i = 0; i < glob.planets.length; i++) {
     if (glob.planets[i].info.owner === playerID) {
       result.push(glob.planets[i]);
     }
   }
+  result.sort(function (a,b) {return a.planetID.localeCompare(b.planetID);});
   return result;
 }
 
@@ -374,6 +365,7 @@ function onReceiveChat(msg) {
     //$('#messages').prepend($('<li>').text(msg));
 }
 
+// TODO server sided movement?
 function onUsedHoney(_) {
   if (player) {
     player.flightTimeLeft += MAX_ENERGY;
