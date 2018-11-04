@@ -163,7 +163,7 @@ function processPlanets () {
       var slot = planetSlots[slotIdx]
       var age = metadata.serverTicks - slot.birthTick
       if (slot.type === "empty") {
-        if (age > Cactus.EMPTY_SPAWN_TIME && Math.random() < Cactus.SPAWN_CHANCE) {
+        if (!planet.owner && age > Cactus.EMPTY_SPAWN_TIME && Math.random() < Cactus.SPAWN_CHANCE) {
           slot.type = "cactus1";
           slot.birthTick = metadata.serverTicks;
           changed = true;
@@ -187,7 +187,9 @@ function processPlanets () {
           if (null !== beehiveSlotIdx) {
             var beehiveSlot = planetSlots[beehiveSlotIdx];
             beehiveSlot.nectar = beehiveSlot.nectar || 0;
-            beehiveSlot.nectar = Math.min(10, beehiveSlot.nectar + 1);
+            beehiveSlot.nectar += 1;
+            beehiveSlot.honeyCombCounter = beehiveSlot.honeyCombCounter || 0;
+            beehiveSlot.honeyCombCounter += 1;
             console.log("added nectar automatically");
           }
           changed = true;
@@ -206,7 +208,14 @@ function processPlanets () {
       } else if (slot.type === "beehive") {
         // TODO come up with a good way to ensure the right properties
         slot.nectar = slot.nectar || 0;
-        if (!slot.itemAvailable && slot.nectar >= 5) {
+        slot.honeyCombCounter = slot.honeyCombCounter || 0;
+        if (!slot.itemAvailable && slot.honeyCombCounter >= 20) {
+          // TODO increase to 50-100 later
+          // TODO CHECK NUMBER OF HOME PLANETS
+          slot.itemAvailable = "honeycomb";
+          slot.honeyCombCounter -= 20;
+          changed = true;
+        } else if (!slot.itemAvailable && slot.nectar >= 5) {
           slot.itemAvailable = "honey";
           slot.nectar -= 5;
           changed = true;
@@ -491,6 +500,11 @@ function createEmptyPlanet() {
   var planet = new Planet(uuidv4())
   var planetInfo = Planet.generateNewInfo(planet.planetID, -9500 + Math.random() * 19000, -9500 + Math.random() * 19000, null)
   planet.info = planetInfo
+  // Sometimes create an empty beehive
+  if (Math.random() < .3) {
+    console.log("Creating an empty beehive");
+    planet.info.slots[Math.floor(6 * Math.random())] = Cactus.generateNewInfo("emptybeehive", metadata.serverTicks, null, null);
+  }
   return planet
 }
 
@@ -640,8 +654,7 @@ function setPlanetInfo(planet) {
 ************************************************ */
 // Find player by ID....maybe no need?
 function playerByID (playerID) {
-  var i
-  for (i = 0; i < players.length; i++) {
+  for (var i = 0; i < players.length; i++) {
     if (players[i].playerID === playerID) {
       return players[i];
     }
@@ -650,8 +663,7 @@ function playerByID (playerID) {
 }
 
 function playerBySocket (socket) {
-  var i
-  for (i = 0; i < players.length; i++) {
+  for (var i = 0; i < players.length; i++) {
     if (players[i].socket === socket) {
       return players[i];
     }
@@ -660,8 +672,7 @@ function playerBySocket (socket) {
 }
 
 function planetByID (planetID) {
-  var i
-  for (i = 0; i < planets.length; i++) {
+  for (var i = 0; i < planets.length; i++) {
     if (planets[i].planetID === planetID) {
       return planets[i];
     }
@@ -669,12 +680,22 @@ function planetByID (planetID) {
   return null;
 }
 
+// TODO remove the singular findhomeplanet
 function findHomePlanet (playerID) {
-  var i
-  for (i = 0; i < planets.length; i++) {
+  for (var i = 0; i < planets.length; i++) {
     if (planets[i].info.owner === playerID) {
       return planets[i];
     }
   }
   return null;
+}
+
+function findHomePlanets (playerID) {
+  var result = []
+  for (var i = 0; i < planets.length; i++) {
+    if (planets[i].info.owner === playerID) {
+      result.push(planets[i]);
+    }
+  }
+  return result;
 }

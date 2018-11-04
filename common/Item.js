@@ -17,10 +17,12 @@
     pollen: 1,
     honey: 2,
     nectar: 3,
+    honeycomb: 4,
+
   }
 
   Item.requiresTarget = function (item) {
-    return (item === "pollen" || item === "seed" || item === "nectar");
+    return (item === "pollen" || item === "seed" || item === "nectar" || item === "honeycomb");
   }
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {

@@ -38,6 +38,8 @@ LocalCactus.prototype.setInfo = function (info) {
     var scaleFactor = 2;
     if (this.type === "beehive") {
       scaleFactor = 3;
+    } else if (this.type === "emptybeehive") {
+      scaleFactor = 2.5;
     }
     this.gameObj.scale = new Phaser.Point(this.hostPlanetObj.info.size * scaleFactor,
       this.hostPlanetObj.info.size * scaleFactor);
@@ -66,7 +68,8 @@ LocalCactus.prototype.updateButtons = function () {
     var pendingUseItem = player.info.inventory[player.selectedItemSlot];
     shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type.startsWith("cactus") && this.currentFrame === 2 && !this.info.pollinatedType)
         || (pendingUseItem === "seed" && this.info.type === "empty")
-        || (pendingUseItem === "nectar" && this.info.type === "beehive");
+        || (pendingUseItem === "nectar" && this.info.type === "beehive")
+        || (pendingUseItem === "honeycomb" && this.info.type === "emptybeehive");
   }
   var shouldHaveItemButton = !shouldHaveArrowButton && !ownedBySomeoneElse && this.info.itemAvailable;
   var shouldHaveItemType = this.info.itemAvailable;

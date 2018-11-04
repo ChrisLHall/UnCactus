@@ -36,8 +36,8 @@ var player = null;
 var localPlayerID = null;
 var MAX_ENERGY = 15 * 60;
 // The base of our player
-var startX = -2000 + 6000 * Math.random();
-var startY = -2000 + 6000 * Math.random();
+var startX = 0;
+var startY = 0;
 
 var glob = {
   currentServerTick: 0,
@@ -349,7 +349,7 @@ function planetByID (planetID) {
   }
   return null
 }
-
+// TODO remove the singular find home planet
 function findHomePlanet (playerID) {
   for (var i = 0; i < glob.planets.length; i++) {
     if (glob.planets[i].info.owner === playerID) {
@@ -357,6 +357,16 @@ function findHomePlanet (playerID) {
     }
   }
   return null
+}
+
+function findHomePlanets (playerID) {
+  var result = []
+  for (var i = 0; i < glob.planets.length; i++) {
+    if (glob.planets[i].info.owner === playerID) {
+      result.push(glob.planets[i]);
+    }
+  }
+  return result;
 }
 
 // TEMP CHAT SYSTEM

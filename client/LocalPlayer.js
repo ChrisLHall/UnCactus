@@ -43,7 +43,7 @@ LocalPlayer.prototype.updateInventoryGFX = function () {
 }
 
 LocalPlayer.prototype.targetPlanet = function (planet) {
-  if (null != planet) {
+  if (null != planet && this.flightTimeLeft > 0) {
     this.targetPos = planet.gameObj.position
     this.targetPlanetObj = planet
   } else {
