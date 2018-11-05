@@ -245,9 +245,9 @@ function onUpdatePlayerInfo (data) {
 
 function onUpdatePlanetInfo (data) {
   var planet = planetByID(data.planetID)
-  if (null == planet) {
+  if (null === planet) {
     var planet = new LocalPlanet(data.planetID, planetGroup, data) // create offscreen
-    glob.planets.push(planet)
+    glob.planets[data.planetID] = planet;
   } else {
     planet.setInfo(data)
   }
@@ -281,10 +281,12 @@ function update () {
       glob.otherPlayers[playerID].update();
     }
   }
-  for (var i = 0; i < glob.planets.length; i++) {
-    var planet = glob.planets[i];
-    if (player && CommonUtil.withinXY(player.gameObj, planet.gameObj, 400, 700)) {
-      glob.planets[i].update();
+  for (var planetID in glob.planets) {
+    if (glob.planets.hasOwnProperty(planetID)) {
+      var planet = glob.planets[planetID];
+      if (player && CommonUtil.withinXY(player.gameObj, planet.gameObj, 400, 700)) {
+        planet.update();
+      }
     }
   }
   for (var i = 0; i < glob.shouts.length; i++) {
@@ -341,25 +343,26 @@ function render () {
 
 function playerByID (playerID) {
   if (glob.otherPlayers.hasOwnProperty(playerID)) {
-    return glob.otherPlayers[i];
+    return glob.otherPlayers[playerID];
   }
   return null;
 }
 
 function planetByID (planetID) {
-  for (var i = 0; i < glob.planets.length; i++) {
-    if (glob.planets[i].planetID === planetID) {
-      return glob.planets[i]
-    }
+  if (glob.planets.hasOwnProperty(planetID)) {
+    return glob.planets[planetID];
   }
-  return null
+  return null;
 }
 
 function findHomePlanets (playerID) {
   var result = [];
-  for (var i = 0; i < glob.planets.length; i++) {
-    if (glob.planets[i].info.owner === playerID) {
-      result.push(glob.planets[i]);
+  for (var planetID in glob.planets) {
+    if (glob.planets.hasOwnProperty(planetID)) {
+      var planet = glob.planets[planetID];
+      if (planet.info.owner === playerID) {
+        result.push(planet);
+      }
     }
   }
   result.sort(function (a,b) {return a.planetID.localeCompare(b.planetID);});
