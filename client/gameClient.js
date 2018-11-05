@@ -168,15 +168,17 @@ function setupLocalPlayer (playerID) {
   var homePlanets = findHomePlanets(playerID);
   var home = homePlanets.length > 0 ? homePlanets[0] : null;
   if (home) {
-    startX = home.gameObj.x;
-    startY = home.gameObj.y;
+    startX = home.x;
+    startY = home.y;
   }
 
   player = new LocalPlayer(playerID, playerGroup, startX, startY, Player.generateNewInfo(playerID));
 
   if (home) {
-    player.teleportToPlanet(home);
+    player.teleportToPlanet(home.planetID);
   }
+  updateSpawnedObjs();
+  glob.intermittents.push(new IntermittentUpdater(player, updateSpawnedObjs, 60))
 
   game.camera.follow(player.gameObj, Phaser.Camera.FOLLOW_LOCKON, 0.3, 0.3);
   game.camera.focusOnXY(startX, startY);
@@ -230,9 +232,6 @@ function onServerTick (data) {
 }
 
 function onUpdatePlayerInfo (data) {
-  // TODO REMOVE
-  console.log("update player " + data.playerID)
-  console.log(data)
   if (null != player && data.playerID === player.playerID) {
     player.setInfo(data)
   } else {
@@ -243,12 +242,11 @@ function onUpdatePlayerInfo (data) {
   }
 }
 
+// TODO change how this works with null bc this fn should not be changing the available planet IDs
 function onUpdatePlanetInfo (data) {
-  var planet = planetByID(data.planetID)
-  if (null === planet) {
-    var planet = new LocalPlanet(data.planetID, planetGroup, data) // create offscreen
-    glob.planets[data.planetID] = planet;
-  } else {
+  glob.planets[data.planetID] = data;
+  var planet = planetObjByID(data.planetID);
+  if (null !== planet) {
     planet.setInfo(data)
   }
 }
@@ -281,11 +279,11 @@ function update () {
       glob.otherPlayers[playerID].update();
     }
   }
-  for (var planetID in glob.planets) {
-    if (glob.planets.hasOwnProperty(planetID)) {
-      var planet = glob.planets[planetID];
-      if (player && CommonUtil.withinXY(player.gameObj, planet.gameObj, 400, 700)) {
-        planet.update();
+  for (var planetID in glob.planetObjs) {
+    if (glob.planetObjs.hasOwnProperty(planetID)) {
+      var planetObj = glob.planetObjs[planetID];
+      if (player && CommonUtil.withinXY(player.gameObj, planetObj.gameObj, 400, 700)) {
+        planetObj.update();
       }
     }
   }
@@ -337,6 +335,34 @@ function updateUI () {
   }
 }
 
+function updateSpawnedObjs () {
+  if (null === player) {
+    return; // not ready yet
+  }
+
+  console.log("Updating spawned objs");
+  var existing = 0;
+  for (var planetID in glob.planets) {
+    if (glob.planets.hasOwnProperty(planetID)) {
+      var planetInfo = glob.planets[planetID];
+      var shouldExist = CommonUtil.withinXY(player.gameObj, planetInfo, 600, 1000);
+      if (shouldExist && !glob.planetObjs.hasOwnProperty(planetID)) {
+        glob.planetObjs[planetID] = new LocalPlanet(planetID, planetGroup, planetInfo);
+        console.log("created " + planetID);
+      } else if (!shouldExist && glob.planetObjs.hasOwnProperty(planetID)) {
+        glob.planetObjs[planetID].destroy();
+        delete glob.planetObjs[planetID];
+        console.log("destroyed " + planetID);
+      }
+      if (shouldExist) {
+        existing++;
+      }
+    }
+  }
+  console.log("Spawned objs: " + existing);
+  // TODO the same for remote players? only if it becomes necessary.
+}
+
 function render () {
 
 }
@@ -355,13 +381,20 @@ function planetByID (planetID) {
   return null;
 }
 
+function planetObjByID (planetID) {
+  if (glob.planetObjs.hasOwnProperty(planetID)) {
+    return glob.planetObjs[planetID];
+  }
+  return null;
+}
+
 function findHomePlanets (playerID) {
   var result = [];
   for (var planetID in glob.planets) {
     if (glob.planets.hasOwnProperty(planetID)) {
-      var planet = glob.planets[planetID];
-      if (planet.info.owner === playerID) {
-        result.push(planet);
+      var planetInfo = glob.planets[planetID];
+      if (planetInfo.owner === playerID) {
+        result.push(planetInfo);
       }
     }
   }

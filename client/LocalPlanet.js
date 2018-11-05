@@ -50,7 +50,7 @@ LocalPlanet.prototype.setInfo = function (info) {
 LocalPlanet.prototype.onClickListener = function () {
   clickUsedByUI = true // ALWAYS DO THIS FIRST
   if (null != player) {
-    player.targetPlanet(this)
+    player.targetPlanet(this.planetID)
   }
 }
 
@@ -60,6 +60,13 @@ LocalPlanet.prototype.update = function () {
   for (var i = 0; i < this.inhabitants.length; i++) {
     this.inhabitants[i].update()
   }
+}
+
+LocalPlanet.prototype.destroy = function () {
+  for (var i = 0; i < this.inhabitants.length; i++) {
+    this.inhabitants[i].destroy();
+  }
+  this.gameObj.destroy();
 }
 
 LocalPlanet.ORIG_RADIUS = 115 * 2

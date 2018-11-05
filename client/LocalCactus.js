@@ -64,7 +64,7 @@ LocalCactus.prototype.update = function () {
 LocalCactus.prototype.updateButtons = function () {
   var ownedBySomeoneElse = (player && this.hostPlanetObj.info.owner && player.playerID !== this.hostPlanetObj.info.owner);
   var shouldHaveArrowButton = false;
-  if (player && player.sittingOnPlanetObj === this.hostPlanetObj && !ownedBySomeoneElse) {
+  if (player && player.sittingOnPlanetID === this.hostPlanetObj.planetID && !ownedBySomeoneElse) {
     var pendingUseItem = player.info.inventory[player.selectedItemSlot];
     shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type.startsWith("cactus") && this.currentFrame === 2 && !this.info.pollinatedType)
         || (pendingUseItem === "seed" && this.info.type === "empty")
@@ -140,6 +140,17 @@ LocalCactus.prototype.updateAnim = function () {
       this.gameObj.animations.play(this.currentFrame.toString());
     }
   }
+}
+
+LocalCactus.prototype.destroy = function () {
+  this.emitter.destroy();
+  if (this.itemButton) {
+    this.itemButton.destroy();
+  }
+  if (this.arrowButton) {
+    this.arrowButton.destroy();
+  }
+  this.gameObj.destroy();
 }
 
 window.LocalCactus = LocalCactus

@@ -155,7 +155,7 @@ function processPlanets () {
       var slot = planetSlots[slotIdx]
       var age = metadata.serverTicks - slot.birthTick
       if (slot.type === "empty") {
-        if (!planet.owner && age > Cactus.EMPTY_SPAWN_TIME && Math.random() < Cactus.SPAWN_CHANCE) {
+        if (!planet.info.owner && age > Cactus.EMPTY_SPAWN_TIME && Math.random() < Cactus.SPAWN_CHANCE) {
           slot.type = "cactus1";
           slot.birthTick = metadata.serverTicks;
           changed = true;

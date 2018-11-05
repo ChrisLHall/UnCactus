@@ -9,8 +9,9 @@ var IntermittentUpdater = function (host, intermittentFunc, countMax) {
 }
 
 IntermittentUpdater.prototype.update = function () {
+  // only check if exists() return true if host has that function
   if (this.finished || !this.host.exists()) {
-    this.finished = true
+    this.finished = true;
     return
   }
   this.counter++

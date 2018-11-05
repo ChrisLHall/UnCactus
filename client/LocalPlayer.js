@@ -17,8 +17,8 @@ var LocalPlayer = function (playerID, group, startX, startY, playerInfo) {
   this.lerpSpeed = 5
   this.flightTimeLeft = MAX_ENERGY;
 
-  this.targetPlanetObj = null;
-  this.sittingOnPlanetObj = null;
+  this.targetPlanetID = null;
+  this.sittingOnPlanetID = null;
 
   // Item slot we're about to use
   this.selectedItemSlot = null;
@@ -42,21 +42,28 @@ LocalPlayer.prototype.updateInventoryGFX = function () {
   }
 }
 
-LocalPlayer.prototype.targetPlanet = function (planet) {
-  if (planet && this.flightTimeLeft > 0) {
-    this.sittingOnPlanetObj = null;
-    this.targetPos = planet.gameObj.position
-    this.targetPlanetObj = planet
+LocalPlayer.prototype.targetPlanet = function (planetID) {
+  if (planetID && this.flightTimeLeft > 0) {
+    this.sittingOnPlanetID = null;
+    var planet = planetByID(planetID);
+    if (planet) {
+      this.targetPos = new Phaser.Point(planet.x, planet.y);
+      this.targetPlanetID = planetID
+    }
   } else {
-    this.targetPlanetObj = null
+    this.targetPlanetID = null
   }
 }
 
-LocalPlayer.prototype.teleportToPlanet = function (planet) {
-  var pos = planet.gameObj.position.clone()
-  this.gameObj.position = pos
-  this.targetPos = pos
-  this.targetPlanetObj = planet
+LocalPlayer.prototype.teleportToPlanet = function (planetID) {
+  var planetInfo = planetByID(planetID);
+  if (planetInfo) {
+    var pos = new Phaser.Point(planetInfo.x, planetInfo.y);
+    this.gameObj.position = pos;
+    this.targetPos = pos.clone();
+    this.targetPlanetID = planetID;
+  }
+  updateSpawnedObjs();
 }
 
 LocalPlayer.prototype.itemRequiresTarget = function (slot) {
@@ -92,7 +99,7 @@ LocalPlayer.prototype.update = function () {
     //game.physics.arcade.moveToPointer(this.gameObj, 300);
     this.targetPos = clickPoint
     this.targetPlanet(null)
-    this.sittingOnPlanetObj = null
+    this.sittingOnPlanetID = null
   }
 
   var delta = Phaser.Point.subtract(this.targetPos, this.gameObj.position)
@@ -103,8 +110,8 @@ LocalPlayer.prototype.update = function () {
     this.gameObj.angle = Math.atan2(delta.y, delta.x) * Phaser.Math.RAD_TO_DEG
   } else {
     // arrived
-    if (null !== this.targetPlanetObj) {
-      this.sittingOnPlanetObj = this.targetPlanetObj
+    if (null !== this.targetPlanetID) {
+      this.sittingOnPlanetID = this.targetPlanetID
       this.targetPlanet(null)
     }
   }
@@ -115,10 +122,13 @@ LocalPlayer.prototype.update = function () {
     this.flightTimeLeft -= this.speedMultiplier();
   }
 
-  if (null !== this.sittingOnPlanetObj) {
-    this.gameObj.angle += this.sittingOnPlanetObj.info.rotSpeed
-    if (this.sittingOnPlanetObj.info.owner === this.playerID && this.flightTimeLeft < MAX_ENERGY) {
-      this.flightTimeLeft = Math.min(this.flightTimeLeft + 5, MAX_ENERGY);
+  if (null !== this.sittingOnPlanetID) {
+    var planetInfo = planetByID(this.sittingOnPlanetID);
+    if (planetInfo) {
+      this.gameObj.angle += planetInfo.rotSpeed
+      if (planetInfo.owner === this.playerID && this.flightTimeLeft < MAX_ENERGY) {
+        this.flightTimeLeft = Math.min(this.flightTimeLeft + 5, MAX_ENERGY);
+      }
     }
   } else {
     // cannot select items for use if you are flying around

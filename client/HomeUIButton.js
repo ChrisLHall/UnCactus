@@ -18,7 +18,7 @@ HomeUIButton.prototype.updateGFX = function () {
   var homePlanets = findHomePlanets(player.playerID);
   var available = homePlanets.length > this.homeIdx;
   var moreThan1 = homePlanets.length > 1;
-  var sittingOn = available && player.sittingOnPlanetObj === homePlanets[this.homeIdx];
+  var sittingOn = available && player.sittingOnPlanetID === homePlanets[this.homeIdx];
   this.button.gameObj.alpha = available ? 1 : .5;
   if (sittingOn) {
     this.button.gameObj.tint = 0xdfffdf;
@@ -37,7 +37,7 @@ HomeUIButton.prototype.onClick = function(pointer) {
   var homePlanets = findHomePlanets(player.playerID);
   var available = homePlanets.length > this.homeUIButton.homeIdx;
   if (available) {
-      player.teleportToPlanet(homePlanets[this.homeUIButton.homeIdx]);
+      player.teleportToPlanet(homePlanets[this.homeUIButton.homeIdx].planetID);
   }
 }
 
@@ -51,7 +51,7 @@ HomeUIButton.prototype.onClickDelete = function(pointer) {
   var homePlanets = findHomePlanets(player.playerID);
   var available = homePlanets.length > this.homeUIButton.homeIdx;
   var moreThan1 = homePlanets.length > 1;
-  var sittingOn = available && player.sittingOnPlanetObj === homePlanets[this.homeUIButton.homeIdx];
+  var sittingOn = available && player.sittingOnPlanetID === homePlanets[this.homeUIButton.homeIdx];
   console.log(homePlanets);
   console.log(available);
   console.log(moreThan1);
