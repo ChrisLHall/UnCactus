@@ -42,8 +42,14 @@ RemotePlayer.prototype.update = function () {
     delta.normalize()
     delta.multiply(this.lerpSpeed, this.lerpSpeed)
   }
-  this.gameObj.x += delta.x
-  this.gameObj.y += delta.y
+  
+  if (!CommonUtil.withinXY(this.gameObj, this.targetPos, 500, 500)) {
+    this.gameObj.x = this.targetPos.x;
+    this.gameObj.y = this.targetPos.y;
+  } else {
+    this.gameObj.x += delta.x;
+    this.gameObj.y += delta.y;
+  }
 }
 
 RemotePlayer.prototype.setTargetPos = function(x, y) {
