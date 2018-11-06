@@ -48,19 +48,6 @@ http.listen(port, function (err) {
   initializeKii()
 })
 
-rl.on('line', function (input) {
-  console.log("Command input: " + input);
-  if (input === "quit") {
-    process.exit(0);
-  } else if (input === "kill all plants") {
-    DEBUGKillAllPlants();
-  } else if (input === "replant") {
-    DEBUGReplant();
-  } else if (input === "generate") {
-    DEBUGGeneratePlanets();
-  }
-});
-
 function initializeKii () {
   if ("" === KiiServerCreds.username || "" === KiiServerCreds.password) {
     console.log("Remember to populate server credentials in KiiServerCreds.js. Exiting...")
@@ -219,35 +206,150 @@ function processPlanets () {
   }
 }
 
-// todo remove
-function DEBUGKillAllPlants () {
-  for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
-    var planet = planets[planetIdx]
-    var planetSlots = planet.info.slots
-    for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
-      planetSlots[slotIdx].type = "empty"
-      planetSlots[slotIdx].birthTick = metadata.serverTicks
-    }
-    setPlanetInfo(planet)
+/*************************
+ * Debug commands
+ */
+
+var lastInput = "";
+rl.on('line', function (input) {
+  if (input === "repeat") {
+    input = lastInput;
+  }
+  console.log("Command input: " + input);
+  var tokens = input.split(" ");
+  if (tokens[0] === "quit") {
+    process.exit(0);
+  } else if (tokens[0] === "players") {
+    DEBUGListPlayers();
+  } else if (tokens[0] === "kill") {
+    DEBUGKillAllPlants(DEBUGPlanetByPartialID(tokens[1]));
+  } else if (tokens[0] === "plant") {
+    DEBUGPlant(DEBUGPlanetByPartialID(tokens[1]));
+  } else if (tokens[0] === "grow") {
+    DEBUGGrow(DEBUGPlanetByPartialID(tokens[1]));
+  } else if (tokens[0] === "generate") {
+    DEBUGGeneratePlanets(parseInt(tokens[1]));
+  } else if (tokens[0] === "give") {
+    DEBUGGiveItem(DEBUGPlayerByPartialID(tokens[1]), tokens[2]);
+  } else if (tokens[0] === "clearitems") {
+    DEBUGClearItems(DEBUGPlayerByPartialID(tokens[1]));
+  } else if (tokens[0] === "matchplayer") {
+    console.log(DEBUGPlayerByPartialID(tokens[1]));
+  } else if (tokens[0] === "matchplanet") {
+    console.log(DEBUGPlanetByPartialID(tokens[1]));
+  } else if (tokens[0] === "homeplanet") {
+    DEBUGGetHomePlanets(DEBUGPlayerByPartialID(tokens[1]));
+  } else {
+    console.log("Unknown command.");
+  }
+  lastInput = input;
+});
+
+function DEBUGListPlayers () {
+  for (var i = 0; i < players.length; i++) {
+    console.log("Player: "+ players[i].playerID);
   }
 }
-function DEBUGReplant () {
-  for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
-    var planet = planets[planetIdx]
-    var planetSlots = planet.info.slots
-    for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
-      planetSlots[slotIdx].type = "cactus1"
-      planetSlots[slotIdx].birthTick = metadata.serverTicks
-    }
-    setPlanetInfo(planet)
+
+function DEBUGKillAllPlants (planet) {
+  if (null === planet) {
+    return;
   }
+  var planetSlots = planet.info.slots
+  for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
+    if (planetSlots[slotIdx].type.startsWith("cactus")) {
+      planetSlots[slotIdx].type = "empty";
+      planetSlots[slotIdx].birthTick = metadata.serverTicks;
+    }
+  }
+  setPlanetInfo(planet)
 }
-function DEBUGGeneratePlanets () {
-  for (var i = 0; i < 10; i++) {
+
+function DEBUGPlant (planet) {
+  if (null === planet) {
+    return;
+  }
+  var planetSlots = planet.info.slots
+  for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
+    if (planetSlots[slotIdx].type === "empty") {
+      planetSlots[slotIdx].type = "cactus1";
+      planetSlots[slotIdx].birthTick = metadata.serverTicks;
+    }
+  }
+  setPlanetInfo(planet)
+}
+
+function DEBUGGrow (planet) {
+  if (null === planet) {
+    return;
+  }
+  var planetSlots = planet.info.slots
+  for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
+    if (planetSlots[slotIdx].type.startsWith("cactus")) {
+      planetSlots[slotIdx].birthTick -= 10;
+    }
+  }
+  setPlanetInfo(planet)
+}
+
+function DEBUGGeneratePlanets (num) {
+  console.log("Generating " + num);
+  for (var i = 0; i < num; i++) {
     var emptyPlanet = createEmptyPlanet();
     planets.push(emptyPlanet)
     setPlanetInfo(emptyPlanet)
   }
+}
+
+function DEBUGGetHomePlanets (player) {
+  if (null === player) {
+    return;
+  }
+  console.log("Getting home planets")
+  var homePlanets = findHomePlanets(player.playerID);
+  for (var i = 0; i < homePlanets.length; i++) {
+    console.log("Home planet " + homePlanets[i].planetID);
+  }
+}
+
+function DEBUGGiveItem (player, item) {
+  if (null === player) {
+    return;
+  }
+  var invSlot = Player.firstEmptyInventorySlot(player.info);
+  if (invSlot !== -1) {
+    player.info.inventory[invSlot] = item;
+    setPlayerInfo(player);
+  }
+}
+
+function DEBUGClearItems (player) {
+  if (null === player) {
+    return;
+  }
+
+  for (var invSlot = 0; invSlot < player.info.inventory.length; invSlot++) {
+    player.info.inventory[invSlot] = null;
+    setPlayerInfo(player);
+  }
+}
+
+function DEBUGPlayerByPartialID (partialPlayerID) {
+  for (var i = 0; i < players.length; i++) {
+    if (players[i].playerID.startsWith(partialPlayerID)) {
+      return players[i];
+    }
+  }
+  return null;
+}
+
+function DEBUGPlanetByPartialID (partialPlanetID) {
+  for (var i = 0; i < planets.length; i++) {
+    if (planets[i].planetID.startsWith(partialPlanetID)) {
+      return planets[i];
+    }
+  }
+  return null;
 }
 
 /* ************************************************

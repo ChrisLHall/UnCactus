@@ -340,7 +340,6 @@ function updateSpawnedObjs () {
     return; // not ready yet
   }
 
-  console.log("Updating spawned objs");
   var existing = 0;
   for (var planetID in glob.planets) {
     if (glob.planets.hasOwnProperty(planetID)) {
@@ -359,7 +358,6 @@ function updateSpawnedObjs () {
       }
     }
   }
-  console.log("Spawned objs: " + existing);
   // TODO the same for remote players? only if it becomes necessary.
 }
 
