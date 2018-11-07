@@ -18,7 +18,6 @@
     honey: 2,
     nectar: 3,
     honeycomb: 4,
-
   }
 
   Item.requiresTarget = function (item) {

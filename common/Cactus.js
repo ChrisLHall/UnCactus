@@ -21,6 +21,23 @@
     return type.startsWith("cactus");
   }
 
+  Cactus.globalTemplate = {
+    type: null,
+    birthTick: 0,
+    itemAvailable: null,
+  }
+  Cactus.typeTemplates = {
+    empty: { },
+    emptybeehive: { },
+    cactus: {
+      pollinatedType: null,
+    },
+    beehive: {
+      nectar: 0,
+      honeyCombCounter: 0,
+    },
+  }
+
   Cactus.GROWTH_AGES = [0, 4, 10, 25];
 
   Cactus.EMPTY_SPAWN_TIME = 20
