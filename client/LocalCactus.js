@@ -9,7 +9,7 @@ var LocalCactus = function (hostPlanetObj, slot, group, info) {
   this.itemButton = null;
   this.arrowButton = null;
   this.emitterType = null;
-  this.emitter = game.add.emitter(-10000, -10000, 10);
+  this.emitter = null;
 
   this.gameObj = group.create(-10000, -10000, 'empty')
   this.gameObj.anchor.setTo(0.5, 0.9)
@@ -30,7 +30,10 @@ LocalCactus.prototype.setInfo = function (info) {
       this.gameObj.loadTexture(this.type, 0);
     }
     // stop the particle emitter because it is almost guaranteed to be off-screen
-    this.emitter.kill();
+    if (this.emitter) {
+      this.emitter.destroy();
+      this.emitter = null;
+    }
     this.emitterType = null;
     
     this.updateAnim();
@@ -51,10 +54,12 @@ LocalCactus.prototype.update = function () {
   this.gameObj.angle = degs + 90
   var rads = degs * CommonUtil.DEG_TO_RAD
   var len = LocalPlanet.ORIG_RADIUS * this.hostPlanetObj.info.size
-  this.gameObj.x = this.hostPlanetObj.gameObj.x + len * Math.cos(rads)
-  this.gameObj.y = this.hostPlanetObj.gameObj.y + len * Math.sin(rads)
-  this.emitter.x = this.hostPlanetObj.gameObj.x + (len + 30) * Math.cos(rads);
-  this.emitter.y = this.hostPlanetObj.gameObj.y + (len + 30) * Math.sin(rads);
+  this.gameObj.x = this.hostPlanetObj.gameObj.x + len * Math.cos(rads);
+  this.gameObj.y = this.hostPlanetObj.gameObj.y + len * Math.sin(rads);
+  if (this.emitter) {
+    this.emitter.x = this.hostPlanetObj.gameObj.x + (len + 30) * Math.cos(rads);
+    this.emitter.y = this.hostPlanetObj.gameObj.y + (len + 30) * Math.sin(rads);
+  }
 
   this.updateButtons();
   this.updateParticles();
@@ -110,19 +115,27 @@ LocalCactus.prototype.updateParticles = function () {
   // TODO add the one for pollen
   if (shouldHaveEmitterType === "bees" && this.emitterType !== "bees") {
     this.emitterType = "bees";
-    this.emitter.kill();
+    if (!this.emitter) {
+      this.emitter = game.add.emitter(this.gameObj.x, this.gameObj.y, 10);
+    }
     this.emitter.makeParticles("particles", 1);
     this.emitter.gravity = 0;
     this.emitter.start(false, 600, 200);
   } else if (shouldHaveEmitterType === "pollinated" && this.emitterType !== "pollinated") {
     this.emitterType = "pollinated";
-    this.emitter.kill();
+    if (!this.emitter) {
+      this.emitter = game.add.emitter(this.gameObj.x, this.gameObj.y, 10);
+    }
     this.emitter.makeParticles("particles", 0);
     this.emitter.gravity = 0;
     this.emitter.start(false, 600, 1000);
   }
   if (this.emitterType && !shouldHaveEmitterType) {
-    this.emitter.kill();
+    this.emitterType = null;
+    if (this.emitter) {
+      this.emitter.destroy();
+      this.emitter = null;
+    }
   }
 }
 

@@ -233,6 +233,8 @@ rl.on('line', function (input) {
     DEBUGGiveItem(DEBUGPlayerByPartialID(tokens[1]), tokens[2]);
   } else if (tokens[0] === "clearitems") {
     DEBUGClearItems(DEBUGPlayerByPartialID(tokens[1]));
+  } else if (tokens[0] === "toggleowner") {
+    DEBUGToggleOwnership(DEBUGPlayerByPartialID(tokens[1]), DEBUGPlanetByPartialID(tokens[2]));
   } else if (tokens[0] === "matchplayer") {
     console.log(DEBUGPlayerByPartialID(tokens[1]));
   } else if (tokens[0] === "matchplanet") {
@@ -260,6 +262,8 @@ function DEBUGKillAllPlants (planet) {
     if (planetSlots[slotIdx].type.startsWith("cactus")) {
       planetSlots[slotIdx].type = "empty";
       planetSlots[slotIdx].birthTick = metadata.serverTicks;
+      planetSlots[slotIdx].itemAvailable = null;
+      planetSlots[slotIdx].pollinatedType = null;
     }
   }
   setPlanetInfo(planet)
@@ -332,6 +336,36 @@ function DEBUGClearItems (player) {
     player.info.inventory[invSlot] = null;
     setPlayerInfo(player);
   }
+}
+
+function DEBUGToggleOwnership (player, planet) {
+  if (!player || !planet) {
+    return;
+  }
+
+  var planetSlots = planet.info.slots;
+  var hiveSlot = null;
+  for (var i = 0; i < planetSlots.length; i++) {
+    if (planetSlots[i].type === "beehive" || planetSlots[i].type === "emptybeehive") {
+      hiveSlot = planetSlots[i];
+      break;
+    }
+  }
+  if (!hiveSlot) {
+    console.log("No hive slot");
+    return;
+  }
+  if (hiveSlot.type === "emptybeehive") {
+    hiveSlot.type = "beehive";
+    planet.info.owner = player.playerID;
+  } else {
+    hiveSlot.type = "emptybeehive";
+    planet.info.owner = null;
+  }
+  hiveSlot.birthTick = metadata.serverTicks;
+  hiveSlot.pollinatedType = null;
+  hiveSlot.itemAvailable = null;
+  setPlanetInfo(planet);
 }
 
 function DEBUGPlayerByPartialID (partialPlayerID) {
@@ -766,9 +800,12 @@ function getPlanetInfo(planet, planetID) {
 function setPlanetInfo(planet) {
   var obj = planet.kiiObj;
   var planetInfo = planet.info;
-  if (null == obj) {
+  if (null === obj) {
     var bucket = kii.Kii.bucketWithName("Planets" + BUCKET_SUFFIX);
     obj = bucket.createObject();
+  }
+  if (!planetInfo) {
+    console.log("Planet has no info?? " + planet.planetID);
   }
   for (var key in planetInfo) {
     if (planetInfo.hasOwnProperty(key)) {
