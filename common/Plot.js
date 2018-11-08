@@ -1,4 +1,11 @@
 ;(function() {
+  // Imports
+  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    CommonUtil = require("./CommonUtil");
+    // TODO REMOVE
+    console.log("tried to load common util");
+    console.log(CommonUtil);
+  }
   var Plot = function (startType, birthTick) {
     var info = Plot.generateNewInfo(startType, birthTick)
 
@@ -8,13 +15,29 @@
     }
   }
 
-  Plot.generateNewInfo = function(startType, birthTick) {
-    return {
-      type: startType,
-      birthTick: birthTick,
-      itemAvailable: null,
-      pollinatedType: null, // type of pollen used to pollinate
+  Plot.generateNewInfo = function(type, birthTick, existingObj) {
+    // does not modify existingObj
+    var newObj = {}
+    CommonUtil.validate(newObj, Plot.globalTemplate);
+    // TODO HANDLE TYPES WHICH ARE PARTIAL NAMES
+    // like cactus1. Maybe use underscores in these names?
+    // because otherwise emptybeehive starts with empty, and
+    // it gets jacked up
+    if (Plot.typeTemplates.hasOwnProperty(type)) {
+      CommonUtil.validate(newObj, Plot.typeTemplates[type]);
     }
+    if (existingObj) {
+      CommonUtil.transferCommonProps(newObj, existingObj);
+    }
+    // now apply new information
+    newObj.type = type;
+    newObj.birthTick = birthTick;
+    return newObj
+  }
+
+  // when the data format changes, make sure to update it
+  Plot.validateFormat = function (existingObj) {
+    return Plot.generateNewInfo(existingObj.type, existingObj.birthTick, existingObj);
   }
 
   Plot.isPlot = function(type) {

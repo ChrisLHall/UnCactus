@@ -10,6 +10,14 @@
     }
   }
 
+  CommonUtil.transferCommonProps = function (newObj, oldObj) {
+    for (var property in oldObj) {
+      if (oldObj.hasOwnProperty(property) && newObj.hasOwnProperty(property)) {
+        newObj[property] = oldObj[property]
+      }
+    }
+  }
+
   CommonUtil.DEG_TO_RAD = 3.141592653589792 / 180
 
   CommonUtil.clamp = function (x, min, max) {
