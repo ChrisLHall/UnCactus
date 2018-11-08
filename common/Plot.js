@@ -1,6 +1,6 @@
 ;(function() {
-  var Cactus = function (startType, birthTick) {
-    var info = Cactus.generateNewInfo(startType, birthTick)
+  var Plot = function (startType, birthTick) {
+    var info = Plot.generateNewInfo(startType, birthTick)
 
     // Define which variables and methods can be accessed
     return {
@@ -8,7 +8,7 @@
     }
   }
 
-  Cactus.generateNewInfo = function(startType, birthTick) {
+  Plot.generateNewInfo = function(startType, birthTick) {
     return {
       type: startType,
       birthTick: birthTick,
@@ -17,16 +17,16 @@
     }
   }
 
-  Cactus.isCactus = function(type) {
+  Plot.isPlot = function(type) {
     return type.startsWith("cactus");
   }
 
-  Cactus.globalTemplate = {
+  Plot.globalTemplate = {
     type: null,
     birthTick: 0,
     itemAvailable: null,
   }
-  Cactus.typeTemplates = {
+  Plot.typeTemplates = {
     empty: { },
     emptybeehive: { },
     cactus: {
@@ -38,16 +38,16 @@
     },
   }
 
-  Cactus.GROWTH_AGES = [0, 4, 10, 25];
+  Plot.GROWTH_AGES = [0, 4, 10, 25];
 
-  Cactus.EMPTY_SPAWN_TIME = 20
-  Cactus.SPAWN_CHANCE = .005
-  Cactus.DIE_TIME = 30
-  Cactus.DIE_CHANCE = .05
+  Plot.EMPTY_SPAWN_TIME = 20
+  Plot.SPAWN_CHANCE = .005
+  Plot.DIE_TIME = 30
+  Plot.DIE_CHANCE = .05
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-    module.exports = Cactus
+    module.exports = Plot
   } else {
-    window.Cactus = Cactus
+    window.Plot = Plot
   }
 })();

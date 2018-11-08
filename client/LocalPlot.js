@@ -1,6 +1,6 @@
 /* global game */
 
-var LocalCactus = function (hostPlanetObj, slot, group, info) {
+var LocalPlot = function (hostPlanetObj, slot, group, info) {
   this.hostPlanetObj = hostPlanetObj;
   this.slot = slot;
   this.group = group;
@@ -20,8 +20,8 @@ var LocalCactus = function (hostPlanetObj, slot, group, info) {
   this.setInfo(info)
 }
 
-LocalCactus.prototype.setInfo = function (info) {
-  CommonUtil.validate(info, Cactus.generateNewInfo("empty", 0))
+LocalPlot.prototype.setInfo = function (info) {
+  CommonUtil.validate(info, Plot.generateNewInfo("empty", 0))
   this.info = info
   if (null != this.info) {
     var newType = this.info.type
@@ -49,7 +49,7 @@ LocalCactus.prototype.setInfo = function (info) {
   }
 }
 
-LocalCactus.prototype.update = function () {
+LocalPlot.prototype.update = function () {
   var degs = this.hostPlanetObj.gameObj.angle + this.slot * 60
   this.gameObj.angle = degs + 90
   var rads = degs * CommonUtil.DEG_TO_RAD
@@ -66,7 +66,7 @@ LocalCactus.prototype.update = function () {
   this.updateAnim();
 }
 
-LocalCactus.prototype.updateButtons = function () {
+LocalPlot.prototype.updateButtons = function () {
   var ownedBySomeoneElse = (player && this.hostPlanetObj.info.owner && player.playerID !== this.hostPlanetObj.info.owner);
   var shouldHaveArrowButton = false;
   if (player && player.sittingOnPlanetID === this.hostPlanetObj.planetID && !ownedBySomeoneElse) {
@@ -105,7 +105,7 @@ LocalCactus.prototype.updateButtons = function () {
 
 }
 
-LocalCactus.prototype.updateParticles = function () {
+LocalPlot.prototype.updateParticles = function () {
   var shouldHaveEmitterType = null;
   if (this.info.pollinatedType) {
     shouldHaveEmitterType = "pollinated";
@@ -139,12 +139,12 @@ LocalCactus.prototype.updateParticles = function () {
   }
 }
 
-LocalCactus.prototype.updateAnim = function () {
+LocalPlot.prototype.updateAnim = function () {
   if (null != this.info) {
     var age = Math.max(0, glob.currentServerTick - this.info.birthTick)
     var frame = 0
-    for (var ageIdx = 0; ageIdx < Cactus.GROWTH_AGES.length; ageIdx++) {
-      if (age >= Cactus.GROWTH_AGES[ageIdx]) {
+    for (var ageIdx = 0; ageIdx < Plot.GROWTH_AGES.length; ageIdx++) {
+      if (age >= Plot.GROWTH_AGES[ageIdx]) {
         frame = ageIdx
       }
     }
@@ -155,8 +155,10 @@ LocalCactus.prototype.updateAnim = function () {
   }
 }
 
-LocalCactus.prototype.destroy = function () {
-  this.emitter.destroy();
+LocalPlot.prototype.destroy = function () {
+  if (this.emitter) {
+    this.emitter.destroy();
+  }
   if (this.itemButton) {
     this.itemButton.destroy();
   }
@@ -166,4 +168,4 @@ LocalCactus.prototype.destroy = function () {
   this.gameObj.destroy();
 }
 
-window.LocalCactus = LocalCactus
+window.LocalPlot = LocalPlot

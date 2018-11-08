@@ -9,12 +9,12 @@
     return {
       owner: initialOwnerID,
       slots: [
-        Planet.generateCactusInfo("empty", 0),
-        Planet.generateCactusInfo("empty", 0),
-        Planet.generateCactusInfo("empty", 0),
-        Planet.generateCactusInfo("empty", 0),
-        Planet.generateCactusInfo("empty", 0),
-        Planet.generateCactusInfo("empty", 0),
+        Planet.generatePlotInfo("empty", 0),
+        Planet.generatePlotInfo("empty", 0),
+        Planet.generatePlotInfo("empty", 0),
+        Planet.generatePlotInfo("empty", 0),
+        Planet.generatePlotInfo("empty", 0),
+        Planet.generatePlotInfo("empty", 0),
       ],
       size: .3 + Math.random() * .2,
       rotSpeed: (.05 + Math.random() * .10) * (Math.random() > .5 ? 1 : -1),
@@ -41,7 +41,7 @@
     return null;
   }
 
-  Planet.generateCactusInfo = function (type, birthTick) { }; // Always re-assign this function to Cactus.generateNewInfo
+  Planet.generatePlotInfo = function (type, birthTick) { }; // Always re-assign this function to Plot.generateNewInfo
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Planet

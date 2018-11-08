@@ -13,8 +13,8 @@ var LocalPlanet = function (planetID, group, info) {
 
   this.inhabitants = []
   for (var i = 0; i < 6; i++) {
-    var cactus = new LocalCactus(this, i, group, info.slots[i])
-    this.inhabitants.push(cactus)
+    var plot = new LocalPlot(this, i, group, info.slots[i])
+    this.inhabitants.push(plot)
   }
 }
 

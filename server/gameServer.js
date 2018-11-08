@@ -7,9 +7,9 @@ var io = require('socket.io')(http, {origins:'localhost:* 192.168.*.*:* http://c
 var uuidv4 = require('uuid/v4')
 
 var Player = require('../common/Player')
-var Cactus = require('../common/Cactus')
+var Plot = require('../common/Plot')
 var Planet = require('../common/Planet')
-Planet.generateCactusInfo = Cactus.generateNewInfo
+Planet.generatePlotInfo = Plot.generateNewInfo
 
 var CommonUtil = require('../common/CommonUtil')
 var kii = require('kii-cloud-sdk').create()
@@ -142,19 +142,19 @@ function processPlanets () {
       var slot = planetSlots[slotIdx]
       var age = metadata.serverTicks - slot.birthTick
       if (slot.type === "empty") {
-        if (!planet.info.owner && age > Cactus.EMPTY_SPAWN_TIME && Math.random() < Cactus.SPAWN_CHANCE) {
+        if (!planet.info.owner && age > Plot.EMPTY_SPAWN_TIME && Math.random() < Plot.SPAWN_CHANCE) {
           slot.type = "cactus1";
           slot.birthTick = metadata.serverTicks;
           changed = true;
         }
       } else if (slot.type.startsWith("cactus")) {
-        if (age > Cactus.DIE_TIME && Math.random() < Cactus.DIE_CHANCE) {
+        if (age > Plot.DIE_TIME && Math.random() < Plot.DIE_CHANCE) {
           slot.type = "empty";
           slot.birthTick = metadata.serverTicks;
           slot.itemAvailable = null;
           slot.pollinatedType = null;
           changed = true;
-        } else if (age === Cactus.GROWTH_AGES[2]) {
+        } else if (age === Plot.GROWTH_AGES[2]) {
           // flowering age
           if (Math.random() < .5) {
             slot.itemAvailable = "pollen"; // TODO pollen types
@@ -171,7 +171,7 @@ function processPlanets () {
             beehiveSlot.honeyCombCounter += 1;
           }
           changed = true;
-        } else if (age === Cactus.GROWTH_AGES[3]) {
+        } else if (age === Plot.GROWTH_AGES[3]) {
           if (slot.itemAvailable === "pollen" || slot.itemAvailable === "nectar") {
             slot.itemAvailable = null;
             changed = true;
@@ -674,7 +674,7 @@ function createEmptyPlanet() {
   // Sometimes create an empty beehive
   if (Math.random() < .3) {
     console.log("Creating an empty beehive");
-    planet.info.slots[Math.floor(6 * Math.random())] = Cactus.generateNewInfo("emptybeehive", metadata.serverTicks, null, null);
+    planet.info.slots[Math.floor(6 * Math.random())] = Plot.generateNewInfo("emptybeehive", metadata.serverTicks, null, null);
   }
   return planet
 }
