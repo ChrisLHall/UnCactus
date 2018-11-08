@@ -13,7 +13,7 @@ var LocalPlanet = function (planetID, group, info) {
 
   this.inhabitants = []
   for (var i = 0; i < 6; i++) {
-    var plot = new LocalPlot(this, i, group, info.slots[i])
+    var plot = new LocalPlot(this, i, group, info.plots[i])
     this.inhabitants.push(plot)
   }
 }
@@ -41,7 +41,7 @@ LocalPlanet.prototype.setInfo = function (info) {
 
     if (this.inhabitants) {
       for (var i = 0; i < 6; i++) {
-        this.inhabitants[i].setInfo(this.info.slots[i])
+        this.inhabitants[i].setInfo(this.info.plots[i])
       }
     }
   }

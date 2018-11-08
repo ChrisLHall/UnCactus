@@ -2,17 +2,9 @@
   // Imports
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     CommonUtil = require("./CommonUtil");
-    // TODO REMOVE
-    console.log("tried to load common util");
-    console.log(CommonUtil);
   }
   var Plot = function (startType, birthTick) {
-    var info = Plot.generateNewInfo(startType, birthTick)
-
-    // Define which variables and methods can be accessed
-    return {
-      info: info,
-    }
+    this.info = Plot.generateNewInfo(startType, birthTick);
   }
 
   Plot.generateNewInfo = function(type, birthTick, existingObj) {
@@ -36,12 +28,9 @@
   }
 
   // when the data format changes, make sure to update it
-  Plot.validateFormat = function (existingObj) {
+  Plot.validateInfo = function (existingObj) {
+    // TODO temp convert variable names etc here if they change
     return Plot.generateNewInfo(existingObj.type, existingObj.birthTick, existingObj);
-  }
-
-  Plot.isPlot = function(type) {
-    return type.startsWith("cactus");
   }
 
   Plot.globalTemplate = {

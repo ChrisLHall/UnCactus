@@ -52,7 +52,7 @@ OnPlanetItemButton.prototype.onClick = function () {
   // so we wanna send a message to the server
   // with planet ID and slot number
   if (player) {
-    socket.emit("collect item", { planetID: this.hostPlanetObj.planetID, slot: this.hostObj.slot })
+    socket.emit("collect item", { planetID: this.hostPlanetObj.planetID, plotIdx: this.hostObj.plotIdx })
   }
 }
 

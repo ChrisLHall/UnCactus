@@ -15,9 +15,9 @@ function preload () {
   game.load.image('gohome', 'assets/images/gohome.png');
 
   game.load.spritesheet('empty', 'assets/images/empty_sheet.png', 190, 190);
-  game.load.spritesheet('cactus1', 'assets/images/cactus1_sheet.png', 190, 190);
-  game.load.spritesheet('cactus2', 'assets/images/cactus2_sheet.png', 190, 190);
-  game.load.spritesheet('cactus3', 'assets/images/cactus3_sheet.png', 190, 190);
+  game.load.spritesheet('cactus_1', 'assets/images/cactus_1_sheet.png', 190, 190);
+  game.load.spritesheet('cactus_2', 'assets/images/cactus_2_sheet.png', 190, 190);
+  game.load.spritesheet('cactus_3', 'assets/images/cactus_3_sheet.png', 190, 190);
 
   game.load.spritesheet('beehive', 'assets/images/beehive.png', 96, 96);
   game.load.spritesheet('emptybeehive', 'assets/images/emptybeehive.png', 96, 96);

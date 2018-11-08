@@ -1,8 +1,8 @@
 /* global game */
 
-var LocalPlot = function (hostPlanetObj, slot, group, info) {
+var LocalPlot = function (hostPlanetObj, plotIdx, group, info) {
   this.hostPlanetObj = hostPlanetObj;
-  this.slot = slot;
+  this.plotIdx = plotIdx;
   this.group = group;
   this.type = "empty";
   this.currentFrame = 0;
@@ -50,7 +50,7 @@ LocalPlot.prototype.setInfo = function (info) {
 }
 
 LocalPlot.prototype.update = function () {
-  var degs = this.hostPlanetObj.gameObj.angle + this.slot * 60
+  var degs = this.hostPlanetObj.gameObj.angle + this.plotIdx * 60
   this.gameObj.angle = degs + 90
   var rads = degs * CommonUtil.DEG_TO_RAD
   var len = LocalPlanet.ORIG_RADIUS * this.hostPlanetObj.info.size
@@ -80,10 +80,10 @@ LocalPlot.prototype.updateButtons = function () {
   var shouldHaveItemType = this.info.itemAvailable;
   // update buttons
   if (shouldHaveArrowButton && !this.arrowButton) {
-    this.arrowButton = new OnPlanetSelectButton(this, this.slot, this.group);
+    this.arrowButton = new OnPlanetSelectButton(this, this.plotIdx, this.group);
   }
   if (shouldHaveItemButton && !this.itemButton) {
-    this.itemButton = new OnPlanetItemButton(this, this.slot, this.group, "pollen");
+    this.itemButton = new OnPlanetItemButton(this, this.plotIdx, this.group, "pollen");
   }
   
   if (!shouldHaveItemButton && this.itemButton) {
