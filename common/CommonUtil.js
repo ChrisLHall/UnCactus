@@ -18,6 +18,17 @@
     }
   }
 
+  CommonUtil.splitVariantString = function (variantString) {
+    var name = variantString;
+    var variant = null;
+    var underscoreIdx = name.indexOf("_");
+    if (underscoreIdx !== -1) {
+      variant = parseInt(name.substring(underscoreIdx + 1, name.length));
+      name = name.substring(0, underscoreIdx);
+    }
+    return { name: name, variant: variant, };
+  }
+
   CommonUtil.DEG_TO_RAD = 3.141592653589792 / 180
 
   CommonUtil.clamp = function (x, min, max) {
