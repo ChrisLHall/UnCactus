@@ -4,7 +4,6 @@ var LocalPlot = function (hostPlanetObj, plotIdx, group, info) {
   this.hostPlanetObj = hostPlanetObj;
   this.plotIdx = plotIdx;
   this.group = group;
-  this.type = "empty";
   this.currentFrame = 0;
   this.itemButton = null;
   this.arrowButton = null;
@@ -22,12 +21,16 @@ var LocalPlot = function (hostPlanetObj, plotIdx, group, info) {
 
 LocalPlot.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Plot.generateNewInfo("empty", 0))
+  var oldInfo = this.info || {};
   this.info = info
   if (null != this.info) {
-    var newType = this.info.type
-    if (newType != this.type) {
-      this.type = newType
-      this.gameObj.loadTexture(this.type, 0);
+    if (oldInfo.type !== this.info.type || oldInfo.variant !== this.info.variant) {
+      // variant comparison works even if they are undefined
+      var texture = this.info.type;
+      if (this.info.variant) {
+        texture += "_" + this.info.variant;
+      }
+      this.gameObj.loadTexture(texture, 0);
     }
     // stop the particle emitter because it is almost guaranteed to be off-screen
     if (this.emitter) {
@@ -39,9 +42,9 @@ LocalPlot.prototype.setInfo = function (info) {
     this.updateAnim();
 
     var scaleFactor = 2;
-    if (this.type === "beehive") {
+    if (this.info.type === "beehive") {
       scaleFactor = 3;
-    } else if (this.type === "emptybeehive") {
+    } else if (this.info.type === "emptybeehive") {
       scaleFactor = 2.5;
     }
     this.gameObj.scale = new Phaser.Point(this.hostPlanetObj.info.size * scaleFactor,
@@ -71,7 +74,7 @@ LocalPlot.prototype.updateButtons = function () {
   var shouldHaveArrowButton = false;
   if (player && player.sittingOnPlanetID === this.hostPlanetObj.planetID && !ownedBySomeoneElse) {
     var pendingUseItem = player.info.inventory[player.selectedItemSlot];
-    shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type.startsWith("cactus") && this.currentFrame === 2 && !this.info.pollinatedType)
+    shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type === "cactus" && this.currentFrame === 2 && !this.info.pollinatedType)
         || (pendingUseItem === "seed" && this.info.type === "empty")
         || (pendingUseItem === "nectar" && this.info.type === "beehive")
         || (pendingUseItem === "honeycomb" && this.info.type === "emptybeehive");

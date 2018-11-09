@@ -3,6 +3,7 @@
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     CommonUtil = require("./CommonUtil");
   }
+
   var Plot = function (startType, birthTick) {
     this.info = Plot.generateNewInfo(startType, birthTick);
   }
@@ -11,10 +12,6 @@
     // does not modify existingObj
     var newObj = {}
     CommonUtil.validate(newObj, Plot.globalTemplate);
-    // TODO HANDLE TYPES WHICH ARE PARTIAL NAMES
-    // like cactus1. Maybe use underscores in these names?
-    // because otherwise emptybeehive starts with empty, and
-    // it gets jacked up
     if (Plot.typeTemplates.hasOwnProperty(type)) {
       CommonUtil.validate(newObj, Plot.typeTemplates[type]);
     }
@@ -30,6 +27,11 @@
   // when the data format changes, make sure to update it
   Plot.validateInfo = function (existingObj) {
     // TODO temp convert variable names etc here if they change
+    if (existingObj.type === "cactus1") {
+      existingObj.type = "cactus";
+      existingObj.variant = 1;
+    }
+    // do the proper validation now
     return Plot.generateNewInfo(existingObj.type, existingObj.birthTick, existingObj);
   }
 
@@ -42,6 +44,7 @@
     empty: { },
     emptybeehive: { },
     cactus: {
+      variant: 1,
       pollinatedType: null,
     },
     beehive: {

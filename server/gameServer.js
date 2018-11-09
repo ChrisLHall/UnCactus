@@ -136,66 +136,57 @@ function tick() {
 function processPlanets () {
   for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
     var planet = planets[planetIdx]
-    var planetPlots = planet.info.plots
+    var plots = planet.info.plots
     var changed = false
-    for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
-      var plot = planetPlots[slotIdx]
-      var age = metadata.serverTicks - plot.birthTick
-      if (plot.type === "empty") {
+    for (var idx = 0; idx < 6; idx++) {
+      var age = metadata.serverTicks - plots[idx].birthTick
+      if (plots[idx].type === "empty") {
         if (!planet.info.owner && age > Plot.EMPTY_SPAWN_TIME && Math.random() < Plot.SPAWN_CHANCE) {
-          plot.type = "cactus1";
-          plot.birthTick = metadata.serverTicks;
+          plots[idx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
+          plots[idx].variant = 1;
           changed = true;
         }
-      } else if (plot.type.startsWith("cactus")) {
+      } else if (plots[idx].type === "cactus") {
         if (age > Plot.DIE_TIME && Math.random() < Plot.DIE_CHANCE) {
-          plot.type = "empty";
-          plot.birthTick = metadata.serverTicks;
-          plot.itemAvailable = null;
-          plot.pollinatedType = null;
+          plots[idx] = Plot.generateNewInfo("empty", metadata.serverTicks);
           changed = true;
         } else if (age === Plot.GROWTH_AGES[2]) {
           // flowering age
           if (Math.random() < .5) {
-            plot.itemAvailable = "pollen"; // TODO pollen types
+            plots[idx].itemAvailable = "pollen"; // TODO pollen types
           } else {
-            plot.itemAvailable = "nectar";
+            plots[idx].itemAvailable = "nectar";
           }
           // when a plant flowers, add 1 nectar
-          var beehivePlotIdx = Planet.findPlotOfType(planetPlots, "beehive");
+          var beehivePlotIdx = Planet.findPlotOfType(plots, "beehive");
           if (null !== beehivePlotIdx) {
-            var beehivePlot = planetPlots[beehivePlotIdx];
-            beehivePlot.nectar = beehivePlot.nectar || 0;
+            var beehivePlot = plots[beehivePlotIdx];
             beehivePlot.nectar += 1;
-            beehivePlot.honeyCombCounter = beehivePlot.honeyCombCounter || 0;
             beehivePlot.honeyCombCounter += 1;
           }
           changed = true;
         } else if (age === Plot.GROWTH_AGES[3]) {
-          if (plot.itemAvailable === "pollen" || plot.itemAvailable === "nectar") {
-            plot.itemAvailable = null;
+          if (plots[idx].itemAvailable === "pollen" || plots[idx].itemAvailable === "nectar") {
+            plots[idx].itemAvailable = null;
             changed = true;
           }
           if (Math.random() < .3
-              || (plot.pollinatedType && plot.pollinatedType.startsWith("pollen"))) {
-            plot.itemAvailable = "seed";
-            plot.pollinatedType = null;
+              || (plots[idx].pollinatedType && plots[idx].pollinatedType.startsWith("pollen"))) {
+            plots[idx].itemAvailable = "seed";
+            plots[idx].pollinatedType = null;
             changed = true;
           }
         }
-      } else if (plot.type === "beehive") {
-        // TODO come up with a good way to ensure the right properties
-        plot.nectar = plot.nectar || 0;
-        plot.honeyCombCounter = plot.honeyCombCounter || 0;
-        if (!plot.itemAvailable && plot.honeyCombCounter >= 20) {
+      } else if (plots[idx].type === "beehive") {
+        if (!plots[idx].itemAvailable && plots[idx].honeyCombCounter >= 20) {
           // TODO increase to 50-100 later
           // TODO CHECK NUMBER OF HOME PLANETS
-          plot.itemAvailable = "honeycomb";
-          plot.honeyCombCounter -= 20;
+          plots[idx].itemAvailable = "honeycomb";
+          plots[idx].honeyCombCounter -= 20;
           changed = true;
-        } else if (!plot.itemAvailable && plot.nectar >= 5) {
-          plot.itemAvailable = "honey";
-          plot.nectar -= 5;
+        } else if (!plots[idx].itemAvailable && plots[idx].nectar >= 5) {
+          plots[idx].itemAvailable = "honey";
+          plots[idx].nectar -= 5;
           changed = true;
         }
       }
@@ -259,11 +250,8 @@ function DEBUGKillAllPlants (planet) {
   }
   var planetPlots = planet.info.plots
   for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
-    if (planetPlots[slotIdx].type.startsWith("cactus")) {
-      planetPlots[slotIdx].type = "empty";
-      planetPlots[slotIdx].birthTick = metadata.serverTicks;
-      planetPlots[slotIdx].itemAvailable = null;
-      planetPlots[slotIdx].pollinatedType = null;
+    if (planetPlots[slotIdx].type === "cactus") {
+      planetPlots[slotIdx] = Plot.generateNewInfo("empty", metadata.serverTicks);
     }
   }
   setPlanetInfo(planet)
@@ -276,8 +264,8 @@ function DEBUGPlant (planet) {
   var planetPlots = planet.info.plots
   for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
     if (planetPlots[slotIdx].type === "empty") {
-      planetPlots[slotIdx].type = "cactus1";
-      planetPlots[slotIdx].birthTick = metadata.serverTicks;
+      planetPlots[slotIdx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
+      planetPlots[slotIdx].variant = 1;
     }
   }
   setPlanetInfo(planet)
@@ -289,7 +277,7 @@ function DEBUGGrow (planet) {
   }
   var planetPlots = planet.info.plots
   for (var slotIdx = 0; slotIdx < 6; slotIdx++) {
-    if (planetPlots[slotIdx].type.startsWith("cactus")) {
+    if (planetPlots[slotIdx].type === "cactus") {
       planetPlots[slotIdx].birthTick -= 10;
     }
   }
@@ -343,28 +331,25 @@ function DEBUGToggleOwnership (player, planet) {
     return;
   }
 
-  var planetPlots = planet.info.plots;
-  var hiveSlot = null;
-  for (var i = 0; i < planetPlots.length; i++) {
-    if (planetPlots[i].type === "beehive" || planetPlots[i].type === "emptybeehive") {
-      hiveSlot = planetPlots[i];
+  var plots = planet.info.plots;
+  var hiveIdx = -1;
+  for (var i = 0; i < plots.length; i++) {
+    if (plots[i].type === "beehive" || plots[i].type === "emptybeehive") {
+      hiveIdx = i;
       break;
     }
   }
-  if (!hiveSlot) {
+  if (hiveIdx === -1) {
     console.log("No hive slot");
     return;
   }
-  if (hiveSlot.type === "emptybeehive") {
-    hiveSlot.type = "beehive";
+  if (plots[hiveIdx].type === "emptybeehive") {
+    plots[hiveIdx] = Plot.generateNewInfo("beehive", metadata.serverTicks);
     planet.info.owner = player.playerID;
   } else {
-    hiveSlot.type = "emptybeehive";
+    plots[hiveIdx] = Plot.generateNewInfo("emptybeehive", metadata.serverTicks);
     planet.info.owner = null;
   }
-  hiveSlot.birthTick = metadata.serverTicks;
-  hiveSlot.pollinatedType = null;
-  hiveSlot.itemAvailable = null;
   setPlanetInfo(planet);
 }
 
@@ -547,22 +532,20 @@ function onUseItem (data) {
   var planetChanged = false;
   var itemUsed = false;
   if (invSlot === "pollen" && planetPlot) {
-    if (planetPlot.type.startsWith("cactus") && null === planetPlot.pollinatedType) {
+    if (planetPlot.type === "cactus" && null === planetPlot.pollinatedType) {
       planetPlot.pollinatedType = invSlot;
       itemUsed = true;
       planetChanged = true;
     }
   } else if (invSlot === "seed" && planetPlot) {
     if (planetPlot.type === "empty") {
-      planetPlot.type = "cactus1"; // TODO different types
-      planetPlot.birthTick = metadata.serverTicks;
+      planetPlot = Plot.generateNewInfo("cactus", metadata.serverTicks);
+      planetPlot.variant = 1;
       itemUsed = true;
       planetChanged = true;
     }
   } else if (invSlot === "nectar" && planetPlot) {
     if (planetPlot.type === "beehive") {
-      planetPlot.nectar = planetPlot.nectar || 0;
-      planetPlot.honeyCombCounter = planetPlot.honeyCombCounter || 0;
       if (planetPlot.nectar < 10) {
         planetPlot.nectar += 1;
         planetPlot.honeyCombCounter += 1;
@@ -576,10 +559,7 @@ function onUseItem (data) {
     this.emit('used honey', {});
   } else if (invSlot === "honeycomb" && planetPlot) {
     if (planetPlot.type === "emptybeehive") {
-      planetPlot.type = "beehive";
-      planetPlot.birthTick = metadata.serverTicks;
-      planetPlot.itemAvailable = null;
-      planetPlot.pollinatedType = null; // todo there must be a better way to reset this shite
+      planetPlot = Plot.generateNewInfo("beehive", metadata.serverTicks);
       planet.info.owner = player.playerID;
       itemUsed = true;
       planetChanged = true;
@@ -620,12 +600,8 @@ function onDestroyBeehive (data) {
   if (planet && planet.info.owner === player.playerID) {
     var planetPlots = planet.info.plots;
     for (var i = 0; i < planetPlots.length; i++) {
-      var planetPlot = planetPlots[i];
-      if (planetPlot.type === "beehive") {
-        planetPlot.type = "emptybeehive";
-        planetPlot.birthTick = metadata.serverTicks;
-        planetPlot.itemAvailable = null;
-        planetPlot.pollinatedType = null;
+      if (planetPlots[i].type === "beehive") {
+        planetPlots[i] = Plot.generateNewInfo("emptybeehive", metadata.serverTicks);
       }
     }
     planet.info.owner = null;
@@ -660,10 +636,9 @@ function createHomePlanet(playerID) {
   var planet = new Planet(uuidv4())
   var planetInfo = Planet.generateNewInfo(planet.planetID, -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), playerID);
   planet.info = planetInfo
-  planetPlot = planet.info.plots[Math.floor(6 * Math.random())];
-  planetPlot.type = "beehive";
-  planetPlot.birthTick = metadata.serverTicks;
-  planetPlot.nectar = 0;
+  var planetPlots = planet.info.plots
+  var idx = Math.floor(6 * Math.random());
+  planetPlots[idx] = Plot.generateNewInfo("beehive", metadata.serverTicks);
   return planet
 }
 
@@ -674,7 +649,7 @@ function createEmptyPlanet() {
   // Sometimes create an empty beehive
   if (Math.random() < .3) {
     console.log("Creating an empty beehive");
-    planet.info.plots[Math.floor(6 * Math.random())] = Plot.generateNewInfo("emptybeehive", metadata.serverTicks, null, null);
+    planet.info.plots[Math.floor(6 * Math.random())] = Plot.generateNewInfo("emptybeehive", metadata.serverTicks);
   }
   return planet
 }

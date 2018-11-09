@@ -4,6 +4,7 @@
     Plot = require("./Plot");
     CommonUtil = require("./CommonUtil");
   }
+  
   var Planet = function (startPlanetID) {
     this.planetID = startPlanetID
     this.kiiObj = null
