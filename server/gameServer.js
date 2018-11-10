@@ -147,6 +147,15 @@ function processPlanets () {
           changed = true;
         }
       } else if (plots[idx].type === "cactus") {
+        if (age >= Plot.GROWTH_AGES[2] && age < Plot.GROWTH_AGES[3]) {
+          // as long as a plant is flowering, add 1 nectar
+          var beehivePlotIdx = Planet.findPlotOfType(plots, "beehive");
+          if (null !== beehivePlotIdx) {
+            var beehivePlot = plots[beehivePlotIdx];
+            beehivePlot.nectar += 1;
+            beehivePlot.honeyCombCounter += 1;
+          }
+        }
         if (age > Plot.DIE_TIME && Math.random() < Plot.DIE_CHANCE) {
           plots[idx] = Plot.generateNewInfo("empty", metadata.serverTicks);
           changed = true;
@@ -156,13 +165,6 @@ function processPlanets () {
             plots[idx].itemAvailable = "pollen"; // TODO pollen types
           } else {
             plots[idx].itemAvailable = "nectar";
-          }
-          // when a plant flowers, add 1 nectar
-          var beehivePlotIdx = Planet.findPlotOfType(plots, "beehive");
-          if (null !== beehivePlotIdx) {
-            var beehivePlot = plots[beehivePlotIdx];
-            beehivePlot.nectar += 1;
-            beehivePlot.honeyCombCounter += 1;
           }
           changed = true;
         } else if (age === Plot.GROWTH_AGES[3]) {
@@ -178,15 +180,19 @@ function processPlanets () {
           }
         }
       } else if (plots[idx].type === "beehive") {
-        if (!plots[idx].itemAvailable && plots[idx].honeyCombCounter >= 20) {
+        var numHomePlanets = 0;
+        if (planet.info.owner) {
+          numHomePlanets = findHomePlanets(planet.info.owner).length;
+        }
+        if (!plots[idx].itemAvailable && plots[idx].honeyCombCounter >= 120 && numHomePlanets < 3) {
           // TODO increase to 50-100 later
           // TODO CHECK NUMBER OF HOME PLANETS
           plots[idx].itemAvailable = "honeycomb";
-          plots[idx].honeyCombCounter -= 20;
+          plots[idx].honeyCombCounter -= 160;
           changed = true;
-        } else if (!plots[idx].itemAvailable && plots[idx].nectar >= 5) {
+        } else if (!plots[idx].itemAvailable && plots[idx].nectar >= 40) {
           plots[idx].itemAvailable = "honey";
-          plots[idx].nectar -= 5;
+          plots[idx].nectar -= 40;
           changed = true;
         }
       }
@@ -515,11 +521,13 @@ function onUseItem (data) {
     console.log("unable to use item: " + player.toString());
   }
   var planet = null;
-  var planetPlot = null;
+  var plots = null;
+  var idx = -1;
   if (data.targetPlanet) {
     planet = planetByID(data.targetPlanet);
     if (planet) {
-      planetPlot = planet.info.plots[0 || data.targetSlot];
+      plots = planet.info.plots;
+      idx = 0 || data.targetSlot;
     }
   }
   var ownedBySomeoneElse = (planet && planet.info.owner && player.playerID !== planet.info.owner);
@@ -531,35 +539,33 @@ function onUseItem (data) {
 
   var planetChanged = false;
   var itemUsed = false;
-  if (invSlot === "pollen" && planetPlot) {
-    if (planetPlot.type === "cactus" && null === planetPlot.pollinatedType) {
-      planetPlot.pollinatedType = invSlot;
+  if (invSlot === "pollen" && plots) {
+    if (plots[idx].type === "cactus" && null === plots[idx].pollinatedType) {
+      plots[idx].pollinatedType = invSlot;
       itemUsed = true;
       planetChanged = true;
     }
-  } else if (invSlot === "seed" && planetPlot) {
-    if (planetPlot.type === "empty") {
-      planetPlot = Plot.generateNewInfo("cactus", metadata.serverTicks);
-      planetPlot.variant = 1;
+  } else if (invSlot === "seed" && plots) {
+    if (plots[idx].type === "empty") {
+      plots[idx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
+      plots[idx].variant = 1;
       itemUsed = true;
       planetChanged = true;
     }
-  } else if (invSlot === "nectar" && planetPlot) {
-    if (planetPlot.type === "beehive") {
-      if (planetPlot.nectar < 10) {
-        planetPlot.nectar += 1;
-        planetPlot.honeyCombCounter += 1;
-        itemUsed = true;
-        planetChanged = true;
-      }
+  } else if (invSlot === "nectar" && plots) {
+    if (plots[idx].type === "beehive") {
+      plots[idx].nectar += 10;
+      plots[idx].honeyCombCounter += 10;
+      itemUsed = true;
+      planetChanged = true;
     }
   } else if (invSlot === "honey") {
     // always use honey
     itemUsed = true;
     this.emit('used honey', {});
-  } else if (invSlot === "honeycomb" && planetPlot) {
-    if (planetPlot.type === "emptybeehive") {
-      planetPlot = Plot.generateNewInfo("beehive", metadata.serverTicks);
+  } else if (invSlot === "honeycomb" && plots) {
+    if (plots[idx].type === "emptybeehive") {
+      plots[idx] = Plot.generateNewInfo("beehive", metadata.serverTicks);
       planet.info.owner = player.playerID;
       itemUsed = true;
       planetChanged = true;

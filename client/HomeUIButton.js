@@ -18,7 +18,7 @@ HomeUIButton.prototype.updateGFX = function () {
   var homePlanets = findHomePlanets(player.playerID);
   var available = homePlanets.length > this.homeIdx;
   var moreThan1 = homePlanets.length > 1;
-  var sittingOn = available && player.sittingOnPlanetID === homePlanets[this.homeIdx];
+  var sittingOn = available && player.sittingOnPlanetID === homePlanets[this.homeIdx].planetID;
   this.button.gameObj.alpha = available ? 1 : .5;
   if (sittingOn) {
     this.button.gameObj.tint = 0xdfffdf;
