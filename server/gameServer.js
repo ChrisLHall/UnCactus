@@ -144,6 +144,7 @@ function processPlanets () {
         if (!planet.info.owner && age > Plot.EMPTY_SPAWN_TIME && Math.random() < Plot.SPAWN_CHANCE) {
           plots[idx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
           plots[idx].variant = 1;
+          plots[idx].lastGrowTick = metadata.serverTicks;
           changed = true;
         }
       } else if (plots[idx].type === "cactus") {
@@ -272,6 +273,7 @@ function DEBUGPlant (planet) {
     if (planetPlots[slotIdx].type === "empty") {
       planetPlots[slotIdx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
       planetPlots[slotIdx].variant = 1;
+      planetPlots[slotIdx].lastGrowTick = metadata.serverTicks;
     }
   }
   setPlanetInfo(planet)
@@ -549,6 +551,7 @@ function onUseItem (data) {
     if (plots[idx].type === "empty") {
       plots[idx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
       plots[idx].variant = 1;
+      plots[idx].lastGrowTick = metadata.serverTicks;
       itemUsed = true;
       planetChanged = true;
     }

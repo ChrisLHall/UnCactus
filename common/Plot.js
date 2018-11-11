@@ -45,6 +45,9 @@
     emptybeehive: { },
     cactus: {
       variant: 1,
+      growthState: 0,
+      lastGrowTick: 0,
+      timesFlowered: 0,
       pollinatedType: null,
     },
     beehive: {
