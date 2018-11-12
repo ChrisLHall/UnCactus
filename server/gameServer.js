@@ -114,11 +114,28 @@ function init () {
   players = []
   planets = []
 
-  queryAllPlanets()
+  queryAllPlanets();
 
   // Start listening for events
-  setEventHandlers()
-  setInterval(tick, 10000)
+  setEventHandlers();
+  setInterval(saveToServer, 250);
+  setInterval(tick, 10000);
+}
+
+var lastSavedPlanetIdx = 0;
+function saveToServer () {
+  // try to save at least 1 planet per second
+  lastSavedPlanetIdx++;
+  if (lastSavedPlanetIdx >= planets.length) {
+    lastSavedPlanetIdx = 0;
+  }
+  for (; lastSavedPlanetIdx < planets.length; lastSavedPlanetIdx++) {
+    if (planets[lastSavedPlanetIdx].changed) {
+      //console.log("Saving planet " + planets[lastSavedPlanetIdx].planetID + " idx " + lastSavedPlanetIdx);
+      savePlanetInfo(planets[lastSavedPlanetIdx]);
+      break;
+    }
+  }
 }
 
 function tick() {
@@ -153,22 +170,39 @@ function processPlanets () {
           plots[idx].lastGrowTick = metadata.serverTicks;
           plots[idx].growState++;
           changed = true;
-          if (plots[idx].growState === 2) {
-            // just started flowering
-            if (Math.random() < .5) {
-              plots[idx].itemAvailable = "pollen"; // TODO pollen types
+
+          if (plots[idx].growState >= 4) {
+            // Past the max state: either go back to 2, or die.
+            var numFlowers = Plot.MAX_FLOWERS;
+            if (planet.info.owner) {
+              numFlowers++;
+            }
+            if (plots[idx].timesFlowered >= numFlowers || Math.random() < Plot.DIE_CHANCE) {
+              plots[idx] = Plot.generateNewInfo("empty", metadata.serverTicks);
             } else {
-              plots[idx].itemAvailable = "nectar";
+              plots[idx].growState = 2;
             }
-          } else if (plots[idx].growState === 3) {
-            // just stopped flowering
-            if (plots[idx].itemAvailable === "pollen" || plots[idx].itemAvailable === "nectar") {
-              plots[idx].itemAvailable = null;
-            }
-            if (Math.random() < .3
-                || (plots[idx].pollinatedType && plots[idx].pollinatedType.startsWith("pollen"))) {
-              plots[idx].itemAvailable = "seed";
-              plots[idx].pollinatedType = null;
+          }
+
+          if (plots[idx].type !== "empty") {
+            if (plots[idx].growState === 2) {
+              // just started flowering
+              plots[idx].timesFlowered += 1;
+              if (Math.random() < .5) {
+                plots[idx].itemAvailable = "pollen"; // TODO pollen types
+              } else {
+                plots[idx].itemAvailable = "nectar";
+              }
+            } else if (plots[idx].growState === 3) {
+              // just stopped flowering
+              if (plots[idx].itemAvailable === "pollen" || plots[idx].itemAvailable === "nectar") {
+                plots[idx].itemAvailable = null;
+              }
+              if (Math.random() < .3
+                  || (plots[idx].pollinatedType && plots[idx].pollinatedType.startsWith("pollen"))) {
+                plots[idx].itemAvailable = "seed";
+                plots[idx].pollinatedType = null;
+              }
             }
           }
         }
@@ -700,6 +734,8 @@ function getOrInitPlayerInfo(player, playerID) {
 }
 
 function setPlayerInfo(player) {
+  player.socket.emit('update player info', player.info);
+
   var obj = player.kiiObj
   var playerInfo = player.info
 
@@ -715,8 +751,6 @@ function setPlayerInfo(player) {
 
   obj.save().then(function (obj) {
     player.kiiObj = obj;
-    player.info = obj._customInfo;
-    player.socket.emit('update player info', player.info);
   }).catch(function (error) {
     var errorString = "" + error.code + ": " + error.message
     console.log(player.playerID + ": Unable to create player info: " + errorString);
@@ -785,7 +819,13 @@ function getPlanetInfo(planet, planetID) {
   });
 }
 
-function setPlanetInfo(planet) {
+function setPlanetInfo (planet) {
+  io.emit('update planet info', planet.info);
+  planet.changed = true;
+}
+
+function savePlanetInfo (planet) {
+  planet.changed = false;
   var obj = planet.kiiObj;
   var planetInfo = planet.info;
   if (null === obj) {
@@ -801,13 +841,14 @@ function setPlanetInfo(planet) {
     }
   }
 
-  obj.save().then(function (obj) {
-    planet.kiiObj = obj;
-    planet.info = obj._customInfo;
-    io.emit('update planet info', planet.info);
+  obj.save().then(function (o) {
+    planet.kiiObj = o;
   }).catch(function (error) {
+    planet.changed = true;
     var errorString = "" + error.code + ": " + error.message
-    console.log(planet.planetID + ": Unable to create planet info: " + errorString);
+    console.log("Unable to save planet info.");
+    console.log(planet.planetID + ". " + errorString);
+    console.log("Info: " + util.inspect(planetInfo, false, null));
   });
 }
 

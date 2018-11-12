@@ -9,6 +9,7 @@
     this.planetID = startPlanetID
     this.kiiObj = null
     this.info = {}
+    this.changed = false;
   }
 
   Planet.generateNewInfo = function(planetID, x, y, initialOwnerID) {

@@ -56,12 +56,12 @@
     },
   }
 
-  Plot.GROWTH_AGES = [4, 6, 15];
+  Plot.GROWTH_AGES = [4, 6, 15, 10];
 
-  Plot.EMPTY_SPAWN_TIME = 20
-  Plot.SPAWN_CHANCE = .005
-  Plot.DIE_TIME = 30
-  Plot.DIE_CHANCE = .05
+  Plot.EMPTY_SPAWN_TIME = 20;
+  Plot.SPAWN_CHANCE = .008;
+  Plot.DIE_CHANCE = .3;
+  Plot.MAX_FLOWERS = 2;
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Plot
