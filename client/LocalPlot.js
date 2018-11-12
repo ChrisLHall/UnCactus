@@ -74,7 +74,7 @@ LocalPlot.prototype.updateButtons = function () {
   var shouldHaveArrowButton = false;
   if (player && player.sittingOnPlanetID === this.hostPlanetObj.planetID && !ownedBySomeoneElse) {
     var pendingUseItem = player.info.inventory[player.selectedItemSlot];
-    shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type === "cactus" && this.currentFrame === 2 && !this.info.pollinatedType)
+    shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type === "cactus" && this.info.growState === 2 && !this.info.pollinatedType)
         || (pendingUseItem === "seed" && this.info.type === "empty")
         || (pendingUseItem === "nectar" && this.info.type === "beehive")
         || (pendingUseItem === "honeycomb" && this.info.type === "emptybeehive");
@@ -143,16 +143,9 @@ LocalPlot.prototype.updateParticles = function () {
 }
 
 LocalPlot.prototype.updateAnim = function () {
-  if (null != this.info) {
-    var age = Math.max(0, glob.currentServerTick - this.info.birthTick)
-    var frame = 0
-    for (var ageIdx = 0; ageIdx < Plot.GROWTH_AGES.length; ageIdx++) {
-      if (age >= Plot.GROWTH_AGES[ageIdx]) {
-        frame = ageIdx
-      }
-    }
-    if (frame !== this.currentFrame) {
-      this.currentFrame = frame;
+  if (this.info && this.info.growState) {
+    if (this.info.growState !== this.currentFrame) {
+      this.currentFrame = this.info.growState;
       this.gameObj.animations.play(this.currentFrame.toString());
     }
   }

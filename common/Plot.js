@@ -45,7 +45,7 @@
     emptybeehive: { },
     cactus: {
       variant: 1,
-      growthState: 0,
+      growState: 0,
       lastGrowTick: 0,
       timesFlowered: 0,
       pollinatedType: null,
@@ -56,7 +56,7 @@
     },
   }
 
-  Plot.GROWTH_AGES = [0, 4, 10, 25];
+  Plot.GROWTH_AGES = [4, 6, 15];
 
   Plot.EMPTY_SPAWN_TIME = 20
   Plot.SPAWN_CHANCE = .005

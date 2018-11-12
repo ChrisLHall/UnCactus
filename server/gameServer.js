@@ -148,7 +148,31 @@ function processPlanets () {
           changed = true;
         }
       } else if (plots[idx].type === "cactus") {
-        if (age >= Plot.GROWTH_AGES[2] && age < Plot.GROWTH_AGES[3]) {
+        var stateAge = metadata.serverTicks - plots[idx].lastGrowTick;
+        if (plots[idx].growState < Plot.GROWTH_AGES.length && stateAge >= Plot.GROWTH_AGES[plots[idx].growState]) {
+          plots[idx].lastGrowTick = metadata.serverTicks;
+          plots[idx].growState++;
+          changed = true;
+          if (plots[idx].growState === 2) {
+            // just started flowering
+            if (Math.random() < .5) {
+              plots[idx].itemAvailable = "pollen"; // TODO pollen types
+            } else {
+              plots[idx].itemAvailable = "nectar";
+            }
+          } else if (plots[idx].growState === 3) {
+            // just stopped flowering
+            if (plots[idx].itemAvailable === "pollen" || plots[idx].itemAvailable === "nectar") {
+              plots[idx].itemAvailable = null;
+            }
+            if (Math.random() < .3
+                || (plots[idx].pollinatedType && plots[idx].pollinatedType.startsWith("pollen"))) {
+              plots[idx].itemAvailable = "seed";
+              plots[idx].pollinatedType = null;
+            }
+          }
+        }
+        if (plots[idx].growState === 2) {
           // as long as a plant is flowering, add 1 nectar
           var beehivePlotIdx = Planet.findPlotOfType(plots, "beehive");
           if (null !== beehivePlotIdx) {
@@ -160,25 +184,6 @@ function processPlanets () {
         if (age > Plot.DIE_TIME && Math.random() < Plot.DIE_CHANCE) {
           plots[idx] = Plot.generateNewInfo("empty", metadata.serverTicks);
           changed = true;
-        } else if (age === Plot.GROWTH_AGES[2]) {
-          // flowering age
-          if (Math.random() < .5) {
-            plots[idx].itemAvailable = "pollen"; // TODO pollen types
-          } else {
-            plots[idx].itemAvailable = "nectar";
-          }
-          changed = true;
-        } else if (age === Plot.GROWTH_AGES[3]) {
-          if (plots[idx].itemAvailable === "pollen" || plots[idx].itemAvailable === "nectar") {
-            plots[idx].itemAvailable = null;
-            changed = true;
-          }
-          if (Math.random() < .3
-              || (plots[idx].pollinatedType && plots[idx].pollinatedType.startsWith("pollen"))) {
-            plots[idx].itemAvailable = "seed";
-            plots[idx].pollinatedType = null;
-            changed = true;
-          }
         }
       } else if (plots[idx].type === "beehive") {
         var numHomePlanets = 0;
