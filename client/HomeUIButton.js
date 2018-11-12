@@ -51,14 +51,9 @@ HomeUIButton.prototype.onClickDelete = function(pointer) {
   var homePlanets = findHomePlanets(player.playerID);
   var available = homePlanets.length > this.homeUIButton.homeIdx;
   var moreThan1 = homePlanets.length > 1;
-  var sittingOn = available && player.sittingOnPlanetID === homePlanets[this.homeUIButton.homeIdx];
-  console.log(homePlanets);
-  console.log(available);
-  console.log(moreThan1);
-  console.log(sittingOn);
+  var sittingOn = available && player.sittingOnPlanetID === homePlanets[this.homeUIButton.homeIdx].planetID;
 
   if (available && moreThan1 && sittingOn) {
-    console.log("Socket emit");
     socket.emit('destroy beehive', {targetPlanet: homePlanets[this.homeUIButton.homeIdx].planetID});
   }
 }
