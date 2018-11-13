@@ -143,7 +143,7 @@ LocalPlot.prototype.updateParticles = function () {
 }
 
 LocalPlot.prototype.updateAnim = function () {
-  if (this.info && this.info.growState) {
+  if (this.info && this.info.hasOwnProperty("growState")) {
     if (this.info.growState !== this.currentFrame) {
       this.currentFrame = this.info.growState;
       this.gameObj.animations.play(this.currentFrame.toString());
