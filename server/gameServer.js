@@ -591,6 +591,7 @@ function onUseItem (data) {
       plots[idx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
       plots[idx].variant = 1;
       plots[idx].lastGrowTick = metadata.serverTicks;
+      console.log("Seeded cactus growth state " + plots[idx].growState)
       itemUsed = true;
       planetChanged = true;
     }

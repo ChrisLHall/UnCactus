@@ -23,7 +23,7 @@ LocalPlot.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Plot.generateNewInfo("empty", 0))
   var oldInfo = this.info || {};
   this.info = info
-  if (null != this.info) {
+  if (this.info) {
     if (oldInfo.type !== this.info.type || oldInfo.variant !== this.info.variant) {
       // variant comparison works even if they are undefined
       var texture = this.info.type;
