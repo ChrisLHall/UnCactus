@@ -21,14 +21,14 @@ var LocalPlanet = function (planetID, group, info) {
 // nobody's, mine, not mine
 LocalPlanet.colors = [0xbbbbbb, 0xddffdd, 0xbbeeff]
 LocalPlanet.prototype.setInfo = function (info) {
-  CommonUtil.validate(info, Planet.generateNewInfo(this.planetID, 0, 0, ""))
+  CommonUtil.validate(info, Planet.generateNewInfo(this.planetID, 0, 0, null))
   this.info = info
-  if (null != this.info) {
+  if (this.info) {
     var ownerID = this.info.owner
     var colIdx = 0
-    if (null == ownerID) {
+    if (!ownerID) {
       colIdx = 0
-    } else if (null != player && ownerID === player.playerID) {
+    } else if (player && ownerID === player.playerID) {
       colIdx = 1
     } else {
       colIdx = 2

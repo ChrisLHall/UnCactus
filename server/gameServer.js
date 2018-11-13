@@ -587,10 +587,11 @@ function onUseItem (data) {
       planetChanged = true;
     }
   } else if (invSlot === "seed" && plots) {
-    if (plots[idx].type === "empty") {
+    if (plots[idx].type === "empty" || plots[idx].type === "cactus") {
       plots[idx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
       plots[idx].variant = 1;
       plots[idx].lastGrowTick = metadata.serverTicks;
+      console.log("Seeded cactus growth state " + plots[idx].growState)
       itemUsed = true;
       planetChanged = true;
     }

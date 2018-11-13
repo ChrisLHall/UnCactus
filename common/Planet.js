@@ -4,7 +4,7 @@
     Plot = require("./Plot");
     CommonUtil = require("./CommonUtil");
   }
-  
+
   var Planet = function (startPlanetID) {
     this.planetID = startPlanetID
     this.kiiObj = null
@@ -26,8 +26,8 @@
 
   Planet.validateInfo = function (planetInfo) {
     // Rename variables that may have changed, etc
-    // TODO remove once fixed
-    if (planetInfo.slots) {
+    // TODO remove once fixed. also this absolutely does not work
+    if (planetInfo.slots && !planetInfo.plots) {
       planetInfo.plots = planetInfo.slots;
       delete planetInfo.slots;
     }
