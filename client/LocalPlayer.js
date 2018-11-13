@@ -43,7 +43,7 @@ LocalPlayer.prototype.updateInventoryGFX = function () {
 }
 
 LocalPlayer.prototype.targetPlanet = function (planetID) {
-  if (planetID && this.flightTimeLeft > 0) {
+  if (planetID/* && this.flightTimeLeft > 0 */) {
     this.sittingOnPlanetID = null;
     var planet = planetByID(planetID);
     if (planet) {
@@ -100,7 +100,7 @@ LocalPlayer.prototype.exists = function () {
 LocalPlayer.prototype.update = function () {
   //  only move when you click
   var clickPoint = new Phaser.Point(game.input.activePointer.worldX, game.input.activePointer.worldY)
-  if (!clickUsedByUI && this.flightTimeLeft > 0 && game.input.activePointer.isDown
+  if (!clickUsedByUI /*&& this.flightTimeLeft > 0*/ && game.input.activePointer.isDown
       && game.input.activePointer.duration > 50
       && Phaser.Point.subtract(clickPoint, this.gameObj.position)
       .getMagnitude() > 70) {
@@ -112,6 +112,9 @@ LocalPlayer.prototype.update = function () {
 
   var delta = Phaser.Point.subtract(this.targetPos, this.gameObj.position)
   var speed = LocalPlayer.BASE_SPEED * this.speedMultiplier();
+  if (this.flightTimeLeft <= 0) {
+    speed = 1; // very slow
+  }
   if (delta.getMagnitude() > speed) {
     delta.normalize()
     delta.multiply(speed, speed)
@@ -134,8 +137,13 @@ LocalPlayer.prototype.update = function () {
     var planetInfo = planetByID(this.sittingOnPlanetID);
     if (planetInfo) {
       this.gameObj.angle += planetInfo.rotSpeed
-      if (planetInfo.owner === this.playerID && this.flightTimeLeft < MAX_ENERGY) {
-        this.flightTimeLeft = Math.min(this.flightTimeLeft + 5, MAX_ENERGY);
+      if (this.flightTimeLeft < MAX_ENERGY) {
+        // maybe certain planets recharge you?
+        var rechargeSpeed = 0;
+        if (planetInfo.owner === this.playerID) {
+          rechargeSpeed = 5;
+        }
+        this.flightTimeLeft = Math.min(this.flightTimeLeft + rechargeSpeed, MAX_ENERGY);
       }
     }
   } else {
