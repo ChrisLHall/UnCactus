@@ -66,6 +66,14 @@ LocalPlayer.prototype.teleportToPlanet = function (planetID) {
   updateSpawnedObjs();
 }
 
+LocalPlayer.prototype.teleportToPosition = function (x, y) {
+  this.sittingOnPlanetID = null;
+  this.targetPlanet(null);
+  this.gameObj.x = x;
+  this.gameObj.y = y;
+  this.targetPos = new Phaser.Point(x, y);
+}
+
 LocalPlayer.prototype.itemRequiresTarget = function (slot) {
   if (null === slot) {
     return false;
