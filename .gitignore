@@ -16,5 +16,7 @@ npm-debug.log
 node_modules
 build
 
+server/KiiServerCreds.js
+
 // do this to ignore changes to server creds:
 // git update-index --assume-unchanged server/KiiServerCreds.js
