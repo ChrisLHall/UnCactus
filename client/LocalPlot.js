@@ -38,7 +38,7 @@ LocalPlot.prototype.setInfo = function (info) {
       this.emitter = null;
     }
     this.emitterType = null;
-    
+
     this.updateAnim();
 
     var scaleFactor = 2;
@@ -75,7 +75,7 @@ LocalPlot.prototype.updateButtons = function () {
   if (player && player.sittingOnPlanetID === this.hostPlanetObj.planetID && !ownedBySomeoneElse) {
     var pendingUseItem = player.info.inventory[player.selectedItemSlot];
     shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type === "cactus" && this.info.growState === 2 && !this.info.pollinatedType)
-        || (pendingUseItem === "seed" && this.info.type === "empty")
+        || (pendingUseItem === "seed" && (this.info.type === "empty" || this.info.type === "cactus"))
         || (pendingUseItem === "nectar" && this.info.type === "beehive")
         || (pendingUseItem === "honeycomb" && this.info.type === "emptybeehive");
   }
@@ -88,7 +88,7 @@ LocalPlot.prototype.updateButtons = function () {
   if (shouldHaveItemButton && !this.itemButton) {
     this.itemButton = new OnPlanetItemButton(this, this.plotIdx, this.group, "pollen");
   }
-  
+
   if (!shouldHaveItemButton && this.itemButton) {
     this.itemButton.destroy();
     this.itemButton = null;

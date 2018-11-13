@@ -4,8 +4,8 @@
 
 // Credentials will not be commited to the repo
 var KiiServerCreds = function () {
-  var username = "" // username here
-  var password = "" // password here
+  var username = "admin_chall" // username here
+  var password = "challosis12" // password here
 
   return {
     username: username,
