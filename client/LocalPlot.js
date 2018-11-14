@@ -74,9 +74,9 @@ LocalPlot.prototype.updateButtons = function () {
   var shouldHaveArrowButton = false;
   if (player && player.sittingOnPlanetID === this.hostPlanetObj.planetID && !ownedBySomeoneElse) {
     var pendingUseItem = player.info.inventory[player.selectedItemSlot];
-    shouldHaveArrowButton = (pendingUseItem === "pollen" && this.info.type === "cactus" && this.info.growState === 2 && !this.info.pollinatedType)
-        || (pendingUseItem === "seed" && (this.info.type === "empty" || this.info.type === "cactus"))
-        || (pendingUseItem === "nectar" && this.info.type === "beehive")
+    shouldHaveArrowButton = (pendingUseItem.startsWith("pollen") && this.info.type === "cactus" && this.info.growState === 2 && !this.info.pollinatedType)
+        || (pendingUseItem.startsWith("seed") && (this.info.type === "empty" || this.info.type === "cactus"))
+        || (pendingUseItem.startsWith("nectar") && this.info.type === "beehive")
         || (pendingUseItem === "honeycomb" && this.info.type === "emptybeehive");
   }
   var shouldHaveItemButton = !shouldHaveArrowButton && !ownedBySomeoneElse && this.info.itemAvailable;

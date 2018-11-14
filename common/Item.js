@@ -13,15 +13,22 @@
   }
 
   Item.typeToFrame = {
-    seed: 0,
-    pollen: 1,
+    seed_1: 0,
+    pollen_1: 1,
     honey: 2,
-    nectar: 3,
+    nectar_1: 3,
     honeycomb: 4,
+    seed_2: 5,
+    pollen_2: 6,
+    seed_3: 7,
+    pollen_3: 8,
+    nectar_2: 9,
+    nectar_3: 10,
+    superhoney: 11,
   }
 
   Item.requiresTarget = function (item) {
-    return (item === "pollen" || item === "seed" || item === "nectar" || item === "honeycomb");
+    return (item.startsWith("pollen") || item.startsWith("seed") || item.startsWith("nectar") || item === "honeycomb");
   }
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {

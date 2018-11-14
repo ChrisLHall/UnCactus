@@ -195,7 +195,7 @@ function processPlanets () {
               }
             } else if (plots[idx].growState === 3) {
               // just stopped flowering
-              if (plots[idx].itemAvailable === "pollen" || plots[idx].itemAvailable === "nectar") {
+              if (plots[idx].itemAvailable.startsWith("pollen") || plots[idx].itemAvailable.startsWith("nectar")) {
                 plots[idx].itemAvailable = null;
               }
               if (Math.random() < .3
@@ -580,13 +580,13 @@ function onUseItem (data) {
 
   var planetChanged = false;
   var itemUsed = false;
-  if (invSlot === "pollen" && plots) {
+  if (invSlot.startsWith("pollen") && plots) {
     if (plots[idx].type === "cactus" && null === plots[idx].pollinatedType) {
       plots[idx].pollinatedType = invSlot;
       itemUsed = true;
       planetChanged = true;
     }
-  } else if (invSlot === "seed" && plots) {
+  } else if (invSlot.startsWith("seed") && plots) {
     if (plots[idx].type === "empty" || plots[idx].type === "cactus") {
       plots[idx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
       plots[idx].variant = 1;
@@ -594,7 +594,7 @@ function onUseItem (data) {
       itemUsed = true;
       planetChanged = true;
     }
-  } else if (invSlot === "nectar" && plots) {
+  } else if (invSlot.startsWith("nectar") && plots) {
     if (plots[idx].type === "beehive") {
       plots[idx].nectar += 10;
       plots[idx].honeyCombCounter += 10;
