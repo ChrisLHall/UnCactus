@@ -6,7 +6,9 @@ var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.CANVAS, 'gameContainer',
     { preload: preload, create: create, update: update, render: render })
 
 function preload () {
-  game.load.image('planet', 'assets/images/planet.png');
+  game.load.image('planet_1', 'assets/images/planet_1.png');
+  game.load.image('planet_2', 'assets/images/planet_2.png');
+  game.load.image('planet_3', 'assets/images/planet_3.png');
 
   game.load.image('spaceBG', 'assets/images/starfield.png');
   game.load.image('spaceFG', 'assets/images/dustfield.png');

@@ -4,7 +4,7 @@ var LocalPlanet = function (planetID, group, info) {
 
   this.planetID = planetID
 
-  this.gameObj = group.create(info.x, info.y, 'planet')
+  this.gameObj = group.create(info.x, info.y, 'planet_' + info.variant);
   this.gameObj.anchor.setTo(0.5, 0.5)
   this.gameObj.inputEnabled = true;
   this.gameObj.events.onInputDown.add(this.onClickListener, this);

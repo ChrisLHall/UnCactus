@@ -15,6 +15,7 @@
   Planet.generateNewInfo = function(planetID, x, y, initialOwnerID) {
     return {
       owner: initialOwnerID,
+      variant: 1,
       plots: Planet.generatePlotInfo(6),
       size: .3 + Math.random() * .2,
       rotSpeed: (.05 + Math.random() * .10) * (Math.random() > .5 ? 1 : -1),

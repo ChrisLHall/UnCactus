@@ -265,7 +265,7 @@ rl.on('line', function (input) {
   } else if (tokens[0] === "grow") {
     DEBUGGrow(DEBUGPlanetByPartialID(tokens[1]));
   } else if (tokens[0] === "generate") {
-    DEBUGGeneratePlanets(parseInt(tokens[1]));
+    DEBUGGeneratePlanets(parseInt(tokens[1]), parseInt(tokens[2]));
   } else if (tokens[0] === "give") {
     DEBUGGiveItem(DEBUGPlayerByPartialID(tokens[1]), tokens[2]);
   } else if (tokens[0] === "clearitems") {
@@ -331,10 +331,10 @@ function DEBUGGrow (planet) {
   setPlanetInfo(planet)
 }
 
-function DEBUGGeneratePlanets (num) {
-  console.log("Generating " + num);
+function DEBUGGeneratePlanets (num, variant) {
+  console.log("Generating " + num + " of " + variant);
   for (var i = 0; i < num; i++) {
-    var emptyPlanet = createEmptyPlanet();
+    var emptyPlanet = createEmptyPlanet(variant);
     planets.push(emptyPlanet)
     setPlanetInfo(emptyPlanet)
   }
@@ -690,12 +690,13 @@ function createHomePlanet(playerID) {
   return planet
 }
 
-function createEmptyPlanet() {
+function createEmptyPlanet(variant) {
   var planet = new Planet(uuidv4())
   var planetInfo = Planet.generateNewInfo(planet.planetID, -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), null);
+  planetInfo.variant = variant;
   planet.info = planetInfo
   // Sometimes create an empty beehive
-  if (Math.random() < .3) {
+  if (variant === 1 && Math.random() < .3) {
     console.log("Creating an empty beehive");
     planet.info.plots[Math.floor(6 * Math.random())] = Plot.generateNewInfo("emptybeehive", metadata.serverTicks);
   }
