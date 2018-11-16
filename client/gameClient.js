@@ -234,12 +234,14 @@ function onServerTick (data) {
 }
 
 function onUpdatePlayerInfo (data) {
-  if (null != player && data.playerID === player.playerID) {
+  if (player && data.playerID === player.playerID) {
     player.setInfo(data)
+    console.log("Set local player info");
   } else {
     var otherPlayer = playerByID(data.playerID)
-    if (null != otherPlayer) {
+    if (otherPlayer) {
       otherPlayer.setInfo(data)
+      console.log("Set remote player info " + data.playerID);
     }
   }
 }

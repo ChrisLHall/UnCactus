@@ -491,7 +491,7 @@ function onNewPlayer (data) {
   console.log("playerID of new player: " + newPlayerID)
   // Create a new player
   var newPlayer = new Player(data.x, data.y, newPlayerID, this)
-  getOrInitPlayerInfo(newPlayer, newPlayer.playerID)
+  getOrInitPlayerInfo(newPlayer)
 
   this.emit('confirm id', {playerID: newPlayer.playerID})
   // update the player's clock
@@ -718,7 +718,8 @@ function createEmptyPlanet(variant) {
   return planet
 }
 
-function getOrInitPlayerInfo(player, playerID) {
+function getOrInitPlayerInfo(player) {
+  var playerID = player.playerID;
   var queryObject = kii.KiiQuery.queryWithClause(kii.KiiClause.equals("playerID", playerID));
   queryObject.sortByDesc("_created");
 
@@ -736,12 +737,11 @@ function getOrInitPlayerInfo(player, playerID) {
       var info = result[0]._customInfo
       CommonUtil.validate(info, Player.generateNewInfo(playerID))
       player.info = info
-      player.socket.emit('update player info', player.info);
     } else {
       console.log(playerID + ": PlayerInfo query failed, returned no objects")
       player.info = Player.generateNewInfo(playerID);
-      setPlayerInfo(player);
     }
+    setPlayerInfo(player);
     ensureHomePlanet(player);
   }).catch(function (error) {
     var errorString = "" + error.code + ":" + error.message;
@@ -750,7 +750,7 @@ function getOrInitPlayerInfo(player, playerID) {
 }
 
 function setPlayerInfo(player) {
-  player.socket.emit('update player info', player.info);
+  io.emit('update player info', player.info);
 
   var obj = player.kiiObj
   var playerInfo = player.info

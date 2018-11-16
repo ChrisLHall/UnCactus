@@ -26,11 +26,11 @@ var LocalPlayer = function (playerID, group, startX, startY, playerInfo) {
   this.setInfo(playerInfo)
 }
 
-LocalPlayer.colors = [0xffffff, 0xaaffaa, 0xffccff]
+LocalPlayer.colors = [0xffffff, 0x7fff7f, 0xff9fff, 0x6f9fff, 0xff9f2f, 0x0f0f9f];
 LocalPlayer.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Player.generateNewInfo(this.playerID))
   this.info = info
-  if (null != this.info) {
+  if (null !== this.info) {
     this.updateInventoryGFX();
     this.gameObj.tint = LocalPlayer.colors[this.info.color];
   }

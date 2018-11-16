@@ -21,14 +21,14 @@ var RemotePlayer = function (playerID, group, startX, startY, playerInfo) {
 }
 
 RemotePlayer.prototype.setColorIndex = function (ind) {
-  this.gameObj.tint = LocalPlayer.colors[ind];
+  
 }
 
 RemotePlayer.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Player.generateNewInfo(this.playerID))
   this.info = info
-  if (null != info) {
-    this.setColorIndex(info.color)
+  if (null !== this.info) {
+    this.gameObj.tint = LocalPlayer.colors[this.info.color];
   }
 }
 

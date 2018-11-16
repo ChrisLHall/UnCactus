@@ -15,7 +15,7 @@
         type: "none",
         expiresAt: 0
       },
-      color: Math.floor(Math.random() * 3),
+      color: Math.floor(Math.random() * 6),
       inventory: [
         null,
         null,
