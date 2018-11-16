@@ -90,7 +90,7 @@ LocalPlayer.prototype.currentSelectedItem = function () {
   if (null === this.selectedItemSlot) {
     return null;
   }
-  return this.info.inventory(this.selectedItemSlot);
+  return this.info.inventory[this.selectedItemSlot];
 }
 
 LocalPlayer.prototype.exists = function () {

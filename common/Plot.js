@@ -59,7 +59,11 @@
   Plot.GROWTH_AGES = [4, 6, 15, 10];
 
   Plot.EMPTY_SPAWN_TIME = 20;
-  Plot.SPAWN_CHANCE = .008;
+  Plot.CACTUS_SPAWN_CHANCES = {
+    1: .008,
+    2: .016,
+    3: .02,
+  };
   Plot.DIE_CHANCE = .3;
   Plot.MAX_FLOWERS = 2;
 

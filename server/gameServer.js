@@ -158,9 +158,10 @@ function processPlanets () {
     for (var idx = 0; idx < 6; idx++) {
       var age = metadata.serverTicks - plots[idx].birthTick
       if (plots[idx].type === "empty") {
-        if (!planet.info.owner && age > Plot.EMPTY_SPAWN_TIME && Math.random() < Plot.SPAWN_CHANCE) {
+        var spawnChance = Plot.CACTUS_SPAWN_CHANCES[planet.info.variant];
+        if (!planet.info.owner && age > Plot.EMPTY_SPAWN_TIME && Math.random() < spawnChance) {
           plots[idx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
-          plots[idx].variant = 1;
+          plots[idx].variant = planet.info.variant;
           plots[idx].lastGrowTick = metadata.serverTicks;
           changed = true;
         }
@@ -188,19 +189,24 @@ function processPlanets () {
             if (plots[idx].growState === 2) {
               // just started flowering
               plots[idx].timesFlowered += 1;
-              if (Math.random() < .5) {
-                plots[idx].itemAvailable = "pollen"; // TODO pollen types
-              } else {
-                plots[idx].itemAvailable = "nectar";
+              var rand = Math.random();
+              if (rand < .2) {
+                plots[idx].itemAvailable = "pollen_" + plots[idx].variant; // TODO pollen types
+              } else if (rand < .3) {
+                plots[idx].itemAvailable = "nectar_" + plots[idx].variant;
               }
             } else if (plots[idx].growState === 3) {
               // just stopped flowering
-              if (plots[idx].itemAvailable.startsWith("pollen") || plots[idx].itemAvailable.startsWith("nectar")) {
+              if (plots[idx].itemAvailable && (plots[idx].itemAvailable.startsWith("pollen") || plots[idx].itemAvailable.startsWith("nectar"))) {
                 plots[idx].itemAvailable = null;
               }
               if (Math.random() < .3
                   || (plots[idx].pollinatedType && plots[idx].pollinatedType.startsWith("pollen"))) {
-                plots[idx].itemAvailable = "seed";
+                var pollinatedVariant = (plots[idx].pollinatedType)
+                    ? CommonUtil.variantFromString(plots[idx].pollinatedType)
+                    : plots[idx].variant;
+                var newVariant = (Math.random() < .5) ? pollinatedVariant : plots[idx].variant;
+                plots[idx].itemAvailable = "seed_" + newVariant;
                 plots[idx].pollinatedType = null;
               }
             }
@@ -224,15 +230,20 @@ function processPlanets () {
         if (planet.info.owner) {
           numHomePlanets = findHomePlanets(planet.info.owner).length;
         }
-        if (!plots[idx].itemAvailable && plots[idx].honeyCombCounter >= 120 && numHomePlanets < 3) {
-          // TODO increase to 50-100 later
-          // TODO CHECK NUMBER OF HOME PLANETS
+        var owner = playerByID(planet.info.owner);
+        var honeyCombCost = numHomePlanets >= 2 ? 500 : 200
+        if (!plots[idx].itemAvailable && plots[idx].honeyCombCounter >= honeyCombCost && numHomePlanets < 3
+            && (owner && !Player.hasInInventory(owner.info, "honeycomb"))) {
           plots[idx].itemAvailable = "honeycomb";
-          plots[idx].honeyCombCounter -= 160;
+          plots[idx].honeyCombCounter -= honeyCombCost;
           changed = true;
         } else if (!plots[idx].itemAvailable && plots[idx].nectar >= 40) {
           plots[idx].itemAvailable = "honey";
           plots[idx].nectar -= 40;
+          changed = true;
+        } else if (plots[idx].itemAvailable === "honey" && plots[idx].nectar >= 60) {
+          plots[idx].itemAvailable = "superhoney";
+          plots[idx].nectar -= 60;
           changed = true;
         }
       }
@@ -557,8 +568,11 @@ function onCollectItem (data) {
 
 function onUseItem (data) {
   var player = playerBySocket(this);
-  var invSlot = player.info.inventory[data.slot];
   if (!player) {
+    console.log("unable to use item: " + player.toString());
+  }
+  var invSlot = player.info.inventory[data.slot];
+  if (!invSlot) {
     console.log("unable to use item: " + player.toString());
   }
   var planet = null;
@@ -589,22 +603,23 @@ function onUseItem (data) {
   } else if (invSlot.startsWith("seed") && plots) {
     if (plots[idx].type === "empty" || plots[idx].type === "cactus") {
       plots[idx] = Plot.generateNewInfo("cactus", metadata.serverTicks);
-      plots[idx].variant = 1;
+      plots[idx].variant = CommonUtil.variantFromString(invSlot);
       plots[idx].lastGrowTick = metadata.serverTicks;
       itemUsed = true;
       planetChanged = true;
     }
   } else if (invSlot.startsWith("nectar") && plots) {
     if (plots[idx].type === "beehive") {
-      plots[idx].nectar += 10;
-      plots[idx].honeyCombCounter += 10;
+      var variant = CommonUtil.variantFromString(invSlot);
+      plots[idx].nectar += 10 * variant;
+      plots[idx].honeyCombCounter += 10 * variant;
       itemUsed = true;
       planetChanged = true;
     }
-  } else if (invSlot === "honey") {
+  } else if (invSlot === "honey" || invSlot === "superhoney") {
     // always use honey
     itemUsed = true;
-    this.emit('used honey', {});
+    this.emit('used honey', { type: invSlot });
   } else if (invSlot === "honeycomb" && plots) {
     if (plots[idx].type === "emptybeehive") {
       plots[idx] = Plot.generateNewInfo("beehive", metadata.serverTicks);

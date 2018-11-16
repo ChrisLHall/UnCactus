@@ -18,7 +18,10 @@
     }
   }
 
-  CommonUtil.splitVariantString = function (variantString) {
+  CommonUtil.variantFromString = function (variantString) {
+    if (!variantString) {
+      return null;
+    }
     var name = variantString;
     var variant = null;
     var underscoreIdx = name.indexOf("_");
@@ -26,7 +29,7 @@
       variant = parseInt(name.substring(underscoreIdx + 1, name.length));
       name = name.substring(0, underscoreIdx);
     }
-    return { name: name, variant: variant, };
+    return variant;
   }
 
   CommonUtil.DEG_TO_RAD = 3.141592653589792 / 180

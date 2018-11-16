@@ -37,6 +37,15 @@
     return -1;
   }
 
+  Player.hasInInventory = function (playerInfo, item) {
+    for (var i = 0; i < playerInfo.inventory.length; i++) {
+      if (item === playerInfo.inventory[i]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = Player
   } else {

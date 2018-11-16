@@ -408,8 +408,9 @@ function onReceiveChat(msg) {
 }
 
 // TODO server sided movement?
-function onUsedHoney(_) {
+function onUsedHoney(data) {
+  var mult = (data.type === "superhoney") ? 2 : 1;
   if (player) {
-    player.flightTimeLeft += MAX_ENERGY;
+    player.flightTimeLeft += MAX_ENERGY * mult;
   }
 }
