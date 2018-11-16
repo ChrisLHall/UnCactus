@@ -41,6 +41,7 @@ var MAX_ENERGY = 20 * 60;
 // The base of our player
 var startX = 0;
 var startY = 0;
+var teleportedHomeOnce = false;
 
 var glob = {
   currentServerTick: 0,
@@ -154,6 +155,29 @@ function onSocketConnected () {
 // Socket disconnected
 function onSocketDisconnect () {
   console.log('Disconnected from socket server')
+  
+  glob.otherPlayers = {};
+  for (var key in glob.otherPlayerObjs) {
+    if (glob.otherPlayerObjs.hasOwnProperty(key)) {
+      glob.otherPlayerObjs[key].destroy();
+    }
+  }
+  glob.otherPlayerObjs = {};
+  glob.planets = {};
+  for (var key in glob.planetObjs) {
+    if (glob.planetObjs.hasOwnProperty(key)) {
+      glob.planetObjs[key].destroy();
+    }
+  }
+  glob.planetObjs = {};
+  for (var i = 0; i < glob.shouts.length; i++) {
+    glob.shouts[i].destroy();
+  }
+  glob.shouts = [];
+  if (player) {
+    player.destroy();
+  }
+  player = null;
 }
 
 function onConfirmID (data) {
@@ -178,6 +202,7 @@ function setupLocalPlayer (playerID) {
 
   if (home) {
     player.teleportToPlanet(home.planetID);
+    teleportedHomeOnce = true;
   }
   updateSpawnedObjs();
   glob.intermittents.push(new IntermittentUpdater(player, updateSpawnedObjs, 60))
@@ -219,13 +244,14 @@ function onRemovePlayer (data) {
     return
   }
 
-  playerGroup.remove(removePlayer.gameObj)
-  removePlayer.gameObj.kill()
+  removePlayer.destroy();
 
   // TODO ALSO REMOVE IT FROM THE ARRAY OF INSTANCES
   // Remove player from array
   if (glob.otherPlayers.hasOwnProperty(data.playerID)) {
     delete glob.otherPlayers[data.playerID];
+  } else if (player === removePlayer) {
+    player = null;
   }
 }
 
@@ -246,12 +272,15 @@ function onUpdatePlayerInfo (data) {
   }
 }
 
-// TODO change how this works with null bc this fn should not be changing the available planet IDs
 function onUpdatePlanetInfo (data) {
   glob.planets[data.planetID] = data;
   var planet = planetObjByID(data.planetID);
   if (null !== planet) {
-    planet.setInfo(data)
+    planet.setInfo(data);
+  }
+  if (!teleportedHomeOnce && player && data.owner === player.playerID) {
+    player.teleportToPlanet(data.planetID);
+    teleportedHomeOnce = true;
   }
 }
 

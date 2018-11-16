@@ -161,4 +161,8 @@ LocalPlayer.prototype.speedMultiplier = function () {
   return CommonUtil.clamp(Math.ceil(this.flightTimeLeft / MAX_ENERGY), 1, 3);
 }
 
+LocalPlayer.prototype.destroy = function () {
+  this.gameObj.destroy();
+}
+
 window.LocalPlayer = LocalPlayer

@@ -2,7 +2,7 @@
 
 var Shout = function (playerID) {
   this.playerObj = playerByID(playerID)
-  if (null == this.playerObj) {
+  if (!this.playerObj) {
     this.playerObj = player
   }
 
@@ -28,7 +28,7 @@ Shout.prototype.update = function () {
     if (glob.shouts.indexOf(this) >= 0) {
       glob.shouts.splice(glob.shouts.indexOf(this), 1)
     }
-    this.gameObj.destroy()
+    this.destroy();
   }
 }
 
@@ -42,6 +42,11 @@ Shout.prototype.onClick = function () {
     player.teleportToPosition(this.playerObj.gameObj.x, this.playerObj.gameObj.y);
     console.log("Teleported!");
   }
+}
+
+Shout.prototype.destroy = function () {
+  this.gameObj.destroy();
+  this.playerObj = null;
 }
 
 window.Shout = Shout

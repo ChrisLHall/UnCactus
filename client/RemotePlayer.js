@@ -59,4 +59,8 @@ RemotePlayer.prototype.setTargetPos = function(x, y) {
   //this.lerpSpeed = Phaser.Point.subtract(this.gameObj.position, this.targetPos).getMagnitude() / 30
 }
 
+RemotePlayer.prototype.destroy = function () {
+  this.gameObj.destroy();
+}
+
 window.RemotePlayer = RemotePlayer
