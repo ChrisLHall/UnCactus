@@ -72,6 +72,7 @@ LocalPlayer.prototype.teleportToPosition = function (x, y) {
   this.gameObj.x = x;
   this.gameObj.y = y;
   this.targetPos = new Phaser.Point(x, y);
+  updateSpawnedObjs();
 }
 
 LocalPlayer.prototype.itemRequiresTarget = function (slot) {

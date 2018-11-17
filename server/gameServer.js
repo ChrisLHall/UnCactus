@@ -21,7 +21,7 @@ var rl = readline.createInterface({
 });
 
 var port = process.env.PORT || 4545;
-var WORLD_SIZE = 10000; // also in the client
+var WORLD_SIZE = 15000; // also in the client
 
 var players = []	// Array of connected players
 var planets = []// Array of planets
@@ -787,7 +787,11 @@ function queryAllPlanets() {
   planets = []
   var queryObject = kii.KiiQuery.queryWithClause(null);
   queryObject.sortByDesc("_created");
+  executePlanetQuery(queryObject, 1);
+}
 
+function executePlanetQuery(queryObject, page) {
+  console.log("Executing planet query, page " + page);
   var bucket = kii.Kii.bucketWithName("Planets" + BUCKET_SUFFIX);
   bucket.executeQuery(queryObject).then(function (params) {
     var queryPerformed = params[0];
@@ -801,6 +805,9 @@ function queryAllPlanets() {
       planet.kiiObj = planetResult
       planet.info = Planet.validateInfo(planetInfo);
       planets.push(planet)
+    }
+    if (nextQuery) {
+      executePlanetQuery(nextQuery, page + 1);
     }
   }).catch(function (error) {
     var errorString = "" + error.code + ":" + error.message;

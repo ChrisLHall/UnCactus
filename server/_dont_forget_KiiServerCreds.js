@@ -6,8 +6,8 @@
 
 // Don't commit them to the repo, obviously
 var KiiServerCreds = function () {
-  var username = "admin_chall" // username here
-  var password = "challosis12" // password here
+  var username = "" // username here
+  var password = "" // password here
 
   return {
     username: username,

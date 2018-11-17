@@ -1,6 +1,6 @@
 var WIDTH = 540
 var HEIGHT = 960
-var WORLD_SIZE = 10000; // also in the server
+var WORLD_SIZE = 15000; // also in the server
 
 var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.CANVAS, 'gameContainer',
     { preload: preload, create: create, update: update, render: render })
@@ -155,7 +155,7 @@ function onSocketConnected () {
 // Socket disconnected
 function onSocketDisconnect () {
   console.log('Disconnected from socket server')
-  
+
   glob.otherPlayers = {};
   for (var key in glob.otherPlayerObjs) {
     if (glob.otherPlayerObjs.hasOwnProperty(key)) {
