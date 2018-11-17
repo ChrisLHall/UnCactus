@@ -37,7 +37,7 @@ http.listen(port, function (err) {
   if (err) {
     throw err
   }
-
+  console.log("Starting on port " + port);
   if (process.argv.length >= 3 && process.argv[2] === "dev") {
     console.log("Using DEV databases");
     BUCKET_SUFFIX = "_DEV";
