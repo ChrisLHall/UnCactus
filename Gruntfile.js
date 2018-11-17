@@ -88,9 +88,8 @@ module.exports = function(grunt) {
       },
       dist: {
         files: [{
-          cwd: 'build',
-          src: 'favicon_dist.ico',
-          dest: 'favicon.ico'
+          src: 'build/favicon_dist.ico',
+          dest: 'build/favicon.ico'
         }]
       }
     },
