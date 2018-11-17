@@ -61,8 +61,8 @@
   Plot.EMPTY_SPAWN_TIME = 20;
   Plot.CACTUS_SPAWN_CHANCES = {
     1: .008,
-    2: .016,
-    3: .02,
+    2: .012,
+    3: .015,
   };
   Plot.DIE_CHANCE = .3;
   Plot.MAX_FLOWERS = 2;
