@@ -570,10 +570,12 @@ function onUseItem (data) {
   var player = playerBySocket(this);
   if (!player) {
     console.log("unable to use item: " + player.toString());
+    return;
   }
   var invSlot = player.info.inventory[data.slot];
   if (!invSlot) {
     console.log("unable to use item: " + player.toString());
+    return;
   }
   var planet = null;
   var plots = null;
