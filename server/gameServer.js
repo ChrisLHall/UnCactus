@@ -165,6 +165,8 @@ function processPlanets () {
         if (typeof plots[idx].lastGrowTick !== "undefined") {
           plots[idx].lastGrowTick++;
         }
+        // Mark changed but don't send to clients
+        planet.changed = true;
       }
       var age = metadata.serverTicks - plots[idx].birthTick
       if (plots[idx].type === "empty") {
