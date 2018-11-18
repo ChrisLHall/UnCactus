@@ -204,7 +204,7 @@ function processPlanets () {
               var rand = Math.random();
               if (rand < .2) {
                 plots[idx].itemAvailable = "pollen_" + plots[idx].variant; // TODO pollen types
-              } else if (rand < .3) {
+              } else if (rand < .5) {
                 plots[idx].itemAvailable = "nectar_" + plots[idx].variant;
               }
             } else if (plots[idx].growState === 3) {
