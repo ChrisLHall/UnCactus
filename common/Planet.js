@@ -12,7 +12,7 @@
     this.changed = false;
   }
 
-  Planet.generateNewInfo = function(planetID, x, y, initialOwnerID) {
+  Planet.generateNewInfo = function(planetID, x, y, initialOwnerID, birthTick) {
     return {
       owner: initialOwnerID,
       variant: 1,
@@ -21,7 +21,8 @@
       rotSpeed: (.05 + Math.random() * .10) * (Math.random() > .5 ? 1 : -1),
       x: x,
       y: y,
-      planetID: planetID
+      planetID: planetID,
+      lastChangedTick: birthTick,
     }
   }
 
@@ -33,7 +34,7 @@
       delete planetInfo.slots;
     }
 
-    newPlanetInfo = Planet.generateNewInfo(planetInfo.planetID, planetInfo.x, planetInfo.y, planetInfo.owner);
+    newPlanetInfo = Planet.generateNewInfo(planetInfo.planetID, planetInfo.x, planetInfo.y, planetInfo.owner, 0);
     CommonUtil.transferCommonProps(newPlanetInfo, planetInfo);
     for (var i = 0; i < newPlanetInfo.plots.length; i++) {
       newPlanetInfo.plots[i] = Plot.validateInfo(newPlanetInfo.plots[i]);

@@ -21,7 +21,7 @@ var LocalPlanet = function (planetID, group, info) {
 // nobody's, mine, not mine
 LocalPlanet.colors = [0xbbbbbb, 0xddffdd, 0xbbeeff]
 LocalPlanet.prototype.setInfo = function (info) {
-  CommonUtil.validate(info, Planet.generateNewInfo(this.planetID, 0, 0, null))
+  CommonUtil.validate(info, Planet.generateNewInfo(this.planetID, 0, 0, null, 0))
   this.info = info
   if (this.info) {
     var ownerID = this.info.owner

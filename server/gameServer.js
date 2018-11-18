@@ -132,6 +132,7 @@ function saveToServer () {
   for (; lastSavedPlanetIdx < planets.length; lastSavedPlanetIdx++) {
     if (planets[lastSavedPlanetIdx].changed) {
       //console.log("Saving planet " + planets[lastSavedPlanetIdx].planetID + " idx " + lastSavedPlanetIdx);
+      planets[lastSavedPlanetIdx].lastChangedTick = metadata.serverTicks;
       savePlanetInfo(planets[lastSavedPlanetIdx]);
       break;
     }
@@ -154,8 +155,17 @@ function processPlanets () {
   for (var planetIdx = 0; planetIdx < planets.length; planetIdx++){
     var planet = planets[planetIdx]
     var plots = planet.info.plots
+    var isOwnerOnline = (null !== playerByID(planet.info.owner));
+
     var changed = false
     for (var idx = 0; idx < 6; idx++) {
+      if (!isOwnerOnline) {
+        // stop aging things if owner is offline
+        plots[idx].birthTick++;
+        if (typeof plots[idx].lastGrowTick !== "undefined") {
+          plots[idx].lastGrowTick++;
+        }
+      }
       var age = metadata.serverTicks - plots[idx].birthTick
       if (plots[idx].type === "empty") {
         var spawnChance = Plot.CACTUS_SPAWN_CHANCES[planet.info.variant];
@@ -697,7 +707,7 @@ function onQueryAllPlanets (_) {
 
 function createHomePlanet(playerID) {
   var planet = new Planet(uuidv4())
-  var planetInfo = Planet.generateNewInfo(planet.planetID, -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), playerID);
+  var planetInfo = Planet.generateNewInfo(planet.planetID, -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), playerID, metadata.serverTicks);
   planet.info = planetInfo
   var planetPlots = planet.info.plots
   var idx = Math.floor(6 * Math.random());
@@ -707,7 +717,7 @@ function createHomePlanet(playerID) {
 
 function createEmptyPlanet(variant) {
   var planet = new Planet(uuidv4())
-  var planetInfo = Planet.generateNewInfo(planet.planetID, -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), null);
+  var planetInfo = Planet.generateNewInfo(planet.planetID, -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), -(WORLD_SIZE / 2 - 500) + Math.random() * (WORLD_SIZE - 1000), null, metadata.serverTicks);
   planetInfo.variant = variant;
   planet.info = planetInfo
   // Sometimes create an empty beehive
@@ -824,7 +834,7 @@ function getPlanetInfo(planet, planetID) {
       console.log(planetID + ": Planet query successful")
       planet.kiiObj = result[0]
       var planetInfo = result[0]._customInfo
-      CommonUtil.validate(planetInfo, Planet.generateNewInfo(planetID, 0, 0, null))
+      CommonUtil.validate(planetInfo, Planet.generateNewInfo(planetID, 0, 0, null, 0));
       planet.info = planetInfo
     } else {
       console.log(planetID + ": Planet query failed, returned no objects")
