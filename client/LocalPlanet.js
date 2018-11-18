@@ -19,7 +19,7 @@ var LocalPlanet = function (planetID, group, info) {
 }
 
 // nobody's, mine, not mine
-LocalPlanet.colors = [0xbbbbbb, 0xddffdd, 0xbbeeff]
+LocalPlanet.colors = [0xffffff, 0xddffdd, 0xafcfef]
 LocalPlanet.prototype.setInfo = function (info) {
   CommonUtil.validate(info, Planet.generateNewInfo(this.planetID, 0, 0, null, 0))
   this.info = info

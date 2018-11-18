@@ -39,7 +39,9 @@ Shout.prototype.onClick = function () {
   clickUsedByUI = true;
 
   if (player && this.playerObj) {
-    player.teleportToPosition(this.playerObj.gameObj.x, this.playerObj.gameObj.y);
+    var deltaX = -50 + 100 * Math.random();
+    var deltaY = -50 + 100 * Math.random();
+    player.teleportToPosition(this.playerObj.gameObj.x + deltaX, this.playerObj.gameObj.y + deltaY);
     console.log("Teleported!");
   }
 }
