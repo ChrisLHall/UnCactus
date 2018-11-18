@@ -159,7 +159,7 @@ function processPlanets () {
 
     var changed = false
     for (var idx = 0; idx < 6; idx++) {
-      if (!isOwnerOnline) {
+      if (planet.info.owner && !isOwnerOnline) {
         // stop aging things if owner is offline
         plots[idx].birthTick++;
         if (typeof plots[idx].lastGrowTick !== "undefined") {
